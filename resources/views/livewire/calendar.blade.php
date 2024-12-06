@@ -8,7 +8,7 @@
             </button>
 
             <!-- Título do calendário -->
-            <h2 class="text-3xl font-bold text-white">Calendário 2025</h2>
+            <h2 class="text-3xl font-bold text-white">Férias 2025</h2>
 
             <!-- Botão de avançar -->
             <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
@@ -53,5 +53,26 @@
             Dias restantes a serem selecionados: 
             <span class="text-green-400">{{ $remainingDays }}</span>
         </div>
+
+        <!-- Texto para solicitar férias (aparece após 3 dias selecionados) -->
+        <div class="mt-6 text-center" style="min-height: 72px;"> <!-- Espaço reservado com altura mínima -->
+            @if(count($selectedDays) >= 3)
+                <!-- Botão estilizado -->
+                <button wire:click="sendVacationRequest"
+                        class="px-6 py-3 bg-orange-600 text-white rounded-full text-xl font-semibold hover:bg-orange-500 transition">
+                    Enviar solicitação de férias
+                </button>
+            @else
+                <!-- Espaço reservado para manter a altura -->
+                <div class="inline-block px-6 py-3 invisible"></div>
+            @endif
+        </div>
+
+        <!-- Mensagem de sucesso após a solicitação -->
+        @if (session()->has('message'))
+            <div class="mt-6 text-center text-green-400 font-semibold">
+                {{ session('message') }}
+            </div>
+        @endif
     </div>
 </div>
