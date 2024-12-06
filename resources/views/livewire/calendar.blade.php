@@ -1,89 +1,57 @@
-<div x-data="{
-        userName: @entangle('userName'), 
-        promptVisible: true, 
-        currentMonthIndex: 0,  // Indice atual dos meses
-        monthsVisible: [],  // Meses visíveis na tela
-        totalMonths: @js($months),  // Todos os meses
-        monthsToShow: 3,  // Quantidade de meses por vez
-        
-        // Inicializa os meses visíveis
-        init() {
-            this.updateVisibleMonths();
-        },
-        
-        // Atualiza os meses visíveis conforme o índice
-        updateVisibleMonths() {
-            this.monthsVisible = this.totalMonths.slice(this.currentMonthIndex, this.currentMonthIndex + this.monthsToShow);
-        },
+<div class="bg-gray-900 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-7xl space-y-8">
+        <!-- Navegação entre meses -->
+        <div class="flex justify-between items-center mb-4">
+            <!-- Botão de voltar -->
+            <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
+                &#8592; <!-- Setas para a esquerda -->
+            </button>
 
-        // Avança para o próximo conjunto de meses
-        nextMonths() {
-            if (this.currentMonthIndex + this.monthsToShow < this.totalMonths.length) {
-                this.currentMonthIndex += this.monthsToShow;
-                this.updateVisibleMonths();
-            }
-        },
+            <!-- Título do calendário -->
+            <h2 class="text-3xl font-bold text-white">Calendário 2025</h2>
 
-        // Volta para o conjunto anterior de meses
-        prevMonths() {
-            if (this.currentMonthIndex > 0) {
-                this.currentMonthIndex -= this.monthsToShow;
-                this.updateVisibleMonths();
-            }
-        },
+            <!-- Botão de avançar -->
+            <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
+                &#8594; <!-- Setas para a direita -->
+            </button>
+        </div>
 
-        // Função que pergunta o nome do usuário
-        askName() {
-            const name = prompt('Qual é o seu nome?');
-            if (name) {
-                this.userName = name;
-                this.promptVisible = false;
-                alert('Olá, ' + name + '! Bem-vindo ao calendário!');
-            }
-        }
-    }" 
-    x-init="init()" class="p-6">
-    
-    <div class="flex justify-center mb-6">
-        <!-- Botão de seta esquerda -->
-        <button @click="prevMonths()" class="bg-indigo-500 text-white p-1.5 rounded-full hover:bg-indigo-400 transition-all">
-            &#8592;
-        </button>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-6">
-            <!-- Exibe os 3 meses visíveis -->
-            <template x-for="(month, index) in monthsVisible" :key="index">
-                <div class="border rounded-lg shadow-lg p-4 bg-gradient-to-b from-gray-800 to-gray-900 text-white">
-                    <h2 class="text-xl font-bold text-center text-indigo-300" x-text="month.name"></h2>
-                    <div class="grid grid-cols-7 gap-1 mt-4 text-sm">
-                        <!-- Dias da semana -->
-                        <div class="font-bold text-center text-gray-400">Dom</div>
-                        <div class="font-bold text-center text-gray-400">Seg</div>
-                        <div class="font-bold text-center text-gray-400">Ter</div>
-                        <div class="font-bold text-center text-gray-400">Qua</div>
-                        <div class="font-bold text-center text-gray-400">Qui</div>
-                        <div class="font-bold text-center text-gray-400">Sex</div>
-                        <div class="font-bold text-center text-gray-400">Sáb</div>
-
-                        <!-- Espaços vazios para os primeiros dias -->
-                        <template x-for="i in month.firstDayOfWeek" :key="i">
-                            <div></div>
-                        </template>
-
-                        <!-- Dias do mês -->
-                        <template x-for="(day, dayIndex) in month.days" :key="dayIndex">
-                            <div class="text-center p-2 border rounded-md bg-gray-700 hover:bg-indigo-500 text-indigo-100 font-medium cursor-pointer transition-all duration-200">
-                                <span x-text="day"></span>
+        <!-- Grid de meses -->
+        <div class="grid grid-cols-4 gap-6">
+            @foreach($monthsData as $monthData)
+                <div class="relative bg-gradient-to-t from-gray-800 to-gray-700 text-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-center mb-4">{{ $monthData['name'] }} 2025</h3>
+                    <div class="grid grid-cols-7 text-center mb-2">
+                        @foreach($monthData['daysOfWeek'] as $dayOfWeek)
+                            <div class="font-medium text-gray-400">{{ $dayOfWeek }}</div>
+                        @endforeach
+                    </div>
+                    <div class="grid grid-cols-7 gap-2">
+                        @foreach($monthData['days'] as $day)
+                            <div class="text-center py-2">
+                                @if($day)
+                                    <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
+                                          class="inline-block w-8 h-8 text-center leading-8 cursor-pointer 
+                                          {{ in_array("{$monthData['monthIndex']}-{$day}", $selectedDays) ? 'bg-green-500 text-white' : 'bg-gray-600 text-white' }} 
+                                          rounded-full hover:bg-orange-500 transition">
+                                        {{ $day }}
+                                    </span>
+                                @else
+                                    <span></span>
+                                @endif
                             </div>
-                        </template>
+                        @endforeach
                     </div>
                 </div>
-            </template>
+            @endforeach
         </div>
-        
-        <!-- Botão de seta direita -->
-        <button @click="nextMonths()" class="bg-indigo-500 text-white p-1.5 rounded-full hover:bg-indigo-400 transition-all">
-            &#8594;
-        </button>
+
+        <!-- Exibir a quantidade de dias restantes -->
+        <div class="mt-6 text-center text-xl font-semibold text-gray-300">
+            Você deve selecionar todos os 30 dias de férias.
+            <br>
+            Dias restantes a serem selecionados: 
+            <span class="text-green-400">{{ $remainingDays }}</span>
+        </div>
     </div>
 </div>
