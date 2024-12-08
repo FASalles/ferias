@@ -2,22 +2,35 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Run the database seeds.
+     *
+     * @return void
      */
-    public function run(): void
+    public function run()
     {
-        // User::factory(10)->create();
+        // Criar roles
+        $adminRole = Role::create(['name' => 'admin']);
+        $userRole = Role::create(['name' => 'user']);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Criar permissões
+        Permission::create(['name' => 'manage users']);
+        Permission::create(['name' => 'view posts']);
+
+        // Associar permissões às roles
+        $adminRole->givePermissionTo('manage users');
+        $userRole->givePermissionTo('view posts');
+
+        // Atribuir role ao primeiro usuário
+        $user = \App\Models\User::find(1);
+        if ($user) {
+            $user->assignRole('admin');
+        }
     }
 }

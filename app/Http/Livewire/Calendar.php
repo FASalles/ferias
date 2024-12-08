@@ -14,31 +14,32 @@ class Calendar extends Component
     public $remainingDays = 30;
 
     public function render()
-    {
-        $months = [
-            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+{
+    $months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    $daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    $monthsData = [];
+    for ($i = $this->startMonth; $i < $this->startMonth + $this->monthsPerRow; $i++) {
+        $monthIndex = $i % 12;
+        $firstDay = Carbon::create($this->year, $monthIndex + 1, 1);
+        $daysInMonth = $firstDay->daysInMonth;
+        $startDay = $firstDay->dayOfWeek;
+
+        $monthsData[] = [
+            'name' => $months[$monthIndex],
+            'days' => $this->generateDays($startDay, $daysInMonth),
+            'daysOfWeek' => $daysOfWeek,
+            'monthIndex' => $monthIndex
         ];
-
-        $daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-        $monthsData = [];
-        for ($i = $this->startMonth; $i < $this->startMonth + $this->monthsPerRow; $i++) {
-            $monthIndex = $i % 12;
-            $firstDay = Carbon::create($this->year, $monthIndex + 1, 1);
-            $daysInMonth = $firstDay->daysInMonth;
-            $startDay = $firstDay->dayOfWeek;
-
-            $monthsData[] = [
-                'name' => $months[$monthIndex],
-                'days' => $this->generateDays($startDay, $daysInMonth),
-                'daysOfWeek' => $daysOfWeek,
-                'monthIndex' => $monthIndex
-            ];
-        }
-
-        return view('livewire.calendar', compact('monthsData'));
     }
+
+    return view('livewire.calendar', compact('monthsData'))
+        ->layout('layouts.app'); // Aqui estamos referenciando o layout simplificado
+}
 
     public function nextMonths()
     {
