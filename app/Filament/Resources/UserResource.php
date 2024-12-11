@@ -49,14 +49,13 @@ class UserResource extends Resource
                     'editor' => 'Editor',
                     'user' => 'User',
                 ])
-                ->multiple() // Permite múltiplas seleções
+                ->multiple()
+                // ->relationship('roles', 'name')
                 ->saveRelationshipsWhenHidden(false)
                 ->afterStateHydrated(function ($state, Forms\Set $set) {
-                    // Converte a string armazenada no banco em um array
                     $set('roles', $state ? explode(',', $state) : []);
                 })
                 ->dehydrateStateUsing(function ($state) {
-                    // Agora retornamos um array JSON para o banco de dados
                     return $state && count($state) > 0 ? json_encode($state) : null;
                 }),
 

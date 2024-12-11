@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Filament\Panel;
 
-class User extends Authenticatable
+class User extends Authenticatable //implements FilamentUser//
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -51,8 +50,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function CanAccessFilament(): bool
+    /**
+     * Implementação do método da interface FilamentUser.
+     * 
+     * @param \Filament\Panel $panel
+     * @return bool
+     */
+    public function canAccessFilament(): bool
     {
+        // Verifica se o usuário possui a role 'admin' para poder acessar o painel
         return $this->hasRole('Admin');
     }
 }
+
