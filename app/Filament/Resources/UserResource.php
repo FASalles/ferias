@@ -9,6 +9,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -35,21 +38,34 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('password')
                     ->label('Senha')
                     ->password()
-                    ->required(fn ($context) => $context === 'create')
+                    ->nullable() // Permite que a senha seja nula na edição
+                    ->required(fn ($context) => $context === 'create') // Só obrigatório na criação
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('role')
-                    ->maxLength(255)
-                    ->default('funcionario'),
+                Forms\Components\Select::make('roles')
+                ->label('Roles')
+                ->options([
+                    'admin' => 'Admin',
+                    'editor' => 'Editor',
+                    'user' => 'User',
+                ])
+                ->multiple() // Permite múltiplas seleções
+                ->saveRelationshipsWhenHidden(false)
+                ->afterStateHydrated(function ($state, Forms\Set $set) {
+                    // Converte a string armazenada no banco em um array
+                    $set('roles', $state ? explode(',', $state) : []);
+                })
+                ->dehydrateStateUsing(function ($state) {
+                    // Converte o array selecionado de volta em uma string para armazenar no banco
+                    return implode(',', $state);
+                }),
 
-                // Novo campo para seleção de equipe
                 Forms\Components\Select::make('team')
                     ->label('Equipe')
                     ->options([
                         'DISI' => 'DISI',
                         'PE' => 'PE',
                     ])
-                    ->required(),
             ]);
     }
 
@@ -64,11 +80,6 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('role')
-                    ->label('Função')
-                    ->searchable(),
-
-                // Nova coluna para exibir a equipe
                 Tables\Columns\TextColumn::make('team')
                     ->label('Equipe')
                     ->sortable()
@@ -84,11 +95,11 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -107,5 +118,20 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    // Método para salvar o usuário com lógica personalizada para o campo "password"
+    public static function save(Form $form, $record)
+    {
+        $data = $form->getState();
+
+        // Verifica se a senha foi preenchida, caso contrário, não altera o valor
+        if (!empty($data['password'])) {
+            $record->password = bcrypt($data['password']);
+        }
+
+        // Atualiza os outros campos
+        $record->fill($data);
+        $record->save();
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,7 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'team'
+        'team',
+        'roles',
     ];
 
     /**
@@ -48,8 +51,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function isGestor()
+    public function CanAccessFilament(): bool
     {
-        return $this->role === 'gestor';
+        return $this->hasRole('Admin');
     }
 }
