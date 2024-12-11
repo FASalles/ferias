@@ -56,8 +56,8 @@ class UserResource extends Resource
                     $set('roles', $state ? explode(',', $state) : []);
                 })
                 ->dehydrateStateUsing(function ($state) {
-                    // Converte o array selecionado de volta em uma string para armazenar no banco
-                    return implode(',', $state);
+                    // Agora retornamos um array JSON para o banco de dados
+                    return $state && count($state) > 0 ? json_encode($state) : null;
                 }),
 
                 Forms\Components\Select::make('team')
@@ -70,39 +70,51 @@ class UserResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nome Completo')
-                    ->searchable(),
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('name')
+                ->label('Nome Completo')
+                ->searchable(),
 
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+            Tables\Columns\TextColumn::make('email')
+                ->searchable(),
 
-                Tables\Columns\TextColumn::make('team')
-                    ->label('Equipe')
-                    ->sortable()
-                    ->searchable(),
+            Tables\Columns\TextColumn::make('team')
+                ->label('Equipe')
+                ->sortable()
+                ->searchable(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->label('Data de Criação')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                EditAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+            // Coluna para exibir os papéis do usuário
+            Tables\Columns\TextColumn::make('roles')  // Acessando o campo 'roles'
+                ->label('Roles') // Nome da coluna
+                ->getStateUsing(function ($record) {
+                    // Converte a string de roles em um array e exibe os papéis como uma lista separada por vírgulas
+                    $roles = explode(',', $record->roles); // Caso os papéis estejam armazenados como uma string separada por vírgulas
+                    return implode(', ', $roles); // Exibe os papéis na tabela
+                })
+                ->sortable()
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->label('Data de Criação')
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
+        ->filters([
+            //
+        ])
+        ->actions([
+            EditAction::make(),
+        ])
+        ->bulkActions([
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+            ]),
+        ]);
+}
+
 
     public static function getRelations(): array
     {
