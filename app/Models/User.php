@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Filament\Panel;
+use Filament\Panel; 
 
 class User extends Authenticatable //implements FilamentUser//
 {
@@ -56,10 +56,10 @@ class User extends Authenticatable //implements FilamentUser//
      * @param \Filament\Panel $panel
      * @return bool
      */
-    public function canAccessFilament(): bool
+    public function canAccessPanel(Panel $panel): bool
     {
         // Verifica se o usuário possui a role 'admin' para poder acessar o painel
-        return $this->hasRole('Admin');
+        return $this->hasPermissionTo('access_admin');
     }
 }
 

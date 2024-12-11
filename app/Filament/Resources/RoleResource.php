@@ -24,8 +24,14 @@ class RoleResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nome')    
                     ->required()
                     ->maxLength(255),
+                Forms\Components\Select::make('permissions')
+                    ->label('Permissão')    
+                    ->multiple()
+                    ->relationship('permissions', 'name')
+                    ->preload(),
             ]);
     }
 
@@ -37,7 +43,8 @@ class RoleResource extends Resource
                     ->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                ->label('Criado em')    
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
