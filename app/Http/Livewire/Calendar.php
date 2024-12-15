@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Carbon\Carbon;
+use App\Models\VacationRequest;
 
 class Calendar extends Component
 {
@@ -13,6 +14,14 @@ class Calendar extends Component
     public $selectedDays = [];
     public $remainingDays = 30;
 
+    public function mount()
+    {
+        if (!auth()->check()) {
+            // Se não estiver logado, redireciona o usuário para a página de login
+            return redirect()->route('login');
+        }
+    }
+    
     public function render()
 {
     $months = [
@@ -81,8 +90,21 @@ class Calendar extends Component
     }
 
     public function sendVacationRequest()
-    {
-        // Simula o envio da solicitação de férias. Aqui, você pode adicionar a lógica para processar a solicitação.
+{
+    // Verifica se o usuário está autenticado
+    if (auth()->check()) {
+        // Cria uma nova solicitação de férias
+        VacationRequest::create([
+            'user_id' => auth()->id(),
+            'name' => auth()->user()->name,
+            'status' => 'pending',  // O status pode ser 'pending' por padrão
+        ]);
+
+        // Mensagem de sucesso
         session()->flash('message', 'Solicitação de férias enviada com sucesso!');
+    } else {
+        // Se o usuário não estiver autenticado, exibe uma mensagem de erro
+        session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
     }
+}
 }
