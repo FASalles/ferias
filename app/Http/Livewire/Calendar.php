@@ -91,25 +91,28 @@ class Calendar extends Component
 
     
 
-public function sendVacationRequest()
-{
-    // Verifica se o usuário está autenticado
-    if (auth()->check()) {
-        
-        // Cria uma nova solicitação de férias
-        VacationRequest::create([
-            'user_id' => auth()->id(),
-            'name' => auth()->user()->name,
-            'status' => 'pending',  // O status pode ser 'pending' por padrão
-            'team' => auth()->user()->team,  // Adicionando o campo 'team' do usuário
-        ]);
-
-        // Mensagem de sucesso
-        session()->flash('message', 'Solicitação de férias enviada com sucesso!');
-    } else {
-        // Se o usuário não estiver autenticado, exibe uma mensagem de erro
-        session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
+    public function sendVacationRequest()
+    {
+        // Verifica se o usuário está autenticado
+        if (auth()->check()) {
+            
+    
+            // Cria uma nova solicitação de férias
+            VacationRequest::create([
+                'user_id' => auth()->id(),
+                'name' => auth()->user()->name,
+                'status' => 'pending',  // O status pode ser 'pending' por padrão
+                'team' => auth()->user()->team,  // Adicionando o campo 'team' do usuário
+                'role' => auth()->user()->roles,  // Adicionando o campo 'role' do usuário
+            ]);
+    
+            // Mensagem de sucesso
+            session()->flash('message', 'Solicitação de férias enviada com sucesso!');
+        } else {
+            // Se o usuário não estiver autenticado, exibe uma mensagem de erro
+            session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
+        }
     }
-}
+    
 
 }
