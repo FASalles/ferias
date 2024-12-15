@@ -89,15 +89,19 @@ class Calendar extends Component
         }
     }
 
-    public function sendVacationRequest()
+    
+
+public function sendVacationRequest()
 {
     // Verifica se o usuário está autenticado
     if (auth()->check()) {
+        
         // Cria uma nova solicitação de férias
         VacationRequest::create([
             'user_id' => auth()->id(),
             'name' => auth()->user()->name,
             'status' => 'pending',  // O status pode ser 'pending' por padrão
+            'team' => auth()->user()->team,  // Adicionando o campo 'team' do usuário
         ]);
 
         // Mensagem de sucesso
@@ -107,4 +111,5 @@ class Calendar extends Component
         session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
     }
 }
+
 }
