@@ -16,7 +16,7 @@ class AddTeamRoleAndDaysToVacationRequests extends Migration
             $table->string('role')->nullable();  // O campo 'role' pode ser nulo, caso o usuário não tenha uma role definida
 
             // Adicionando o campo 'days' para armazenar os dias solicitados como string
-            $table->text('days')->nullable();  // Usando 'text' para armazenar os dias como uma string (ex: "2025-01-01,2025-01-02")
+            $table->json('days')->nullable();  // Usando 'text' para armazenar os dias como uma string (ex: "2025-01-01,2025-01-02")
         });
     }
 

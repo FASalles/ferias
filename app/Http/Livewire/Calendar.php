@@ -96,6 +96,8 @@ class Calendar extends Component
         // Verifica se o usuário está autenticado
         if (auth()->check()) {
             
+        
+            
     
             // Cria uma nova solicitação de férias
             VacationRequest::create([
@@ -104,7 +106,12 @@ class Calendar extends Component
                 'status' => 'pending',  // O status pode ser 'pending' por padrão
                 'team' => auth()->user()->team,  // Adicionando o campo 'team' do usuário
                 'role' => auth()->user()->roles,  // Adicionando o campo 'role' do usuário
+                'days' => json_encode($this->selectedDays), // Armazena os dias selecionados como JSON
             ]);
+
+            // Reseta os dias selecionados após a solicitação ser enviada
+            $this->selectedDays = [];
+            $this->remainingDays = 30;
     
             // Mensagem de sucesso
             session()->flash('message', 'Solicitação de férias enviada com sucesso!');

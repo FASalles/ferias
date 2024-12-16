@@ -83,6 +83,8 @@
             @endif
         </div>
 
+        
+
         <!-- Mensagem de sucesso após a solicitação -->
         @if (session()->has('message'))
             <div class="mt-6 text-center text-green-400 font-semibold">

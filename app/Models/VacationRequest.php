@@ -9,7 +9,12 @@ class VacationRequest extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name', 'status', 'team', 'role'];
+    protected $fillable = ['user_id', 'name', 'status', 'team', 'role', 'roles', 'days'];
 }
+
+// public function getDaysAttribute($value)
+// {
+//     return json_decode($value, true); // Converte o JSON de volta para um array
+// }
 
 
