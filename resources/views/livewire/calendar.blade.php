@@ -30,9 +30,15 @@
                         @foreach($monthData['days'] as $day)
                             <div class="text-center py-2">
                                 @if($day)
+                                    @php
+                                        $dayKey = "{$monthData['monthIndex']}-{$day}";
+                                        $isSelected = in_array($dayKey, $selectedDays);
+                                        $isSaved = in_array($dayKey, $savedDays);
+                                    @endphp
+
                                     <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
                                           class="inline-block w-8 h-8 text-center leading-8 cursor-pointer 
-                                          {{ in_array("{$monthData['monthIndex']}-{$day}", $selectedDays) ? 'bg-green-500 text-white' : 'bg-gray-600 text-white' }} 
+                                          {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
                                           rounded-full hover:bg-orange-500 transition">
                                         {{ $day }}
                                     </span>
@@ -82,8 +88,6 @@
                 <div class="inline-block px-6 py-3 invisible"></div>
             @endif
         </div>
-
-        
 
         <!-- Mensagem de sucesso após a solicitação -->
         @if (session()->has('message'))

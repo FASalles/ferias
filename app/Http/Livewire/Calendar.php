@@ -13,14 +13,22 @@ class Calendar extends Component
     public $monthsPerRow = 4;
     public $selectedDays = [];
     public $remainingDays = 30;
+    public $savedDays = [];
 
     public function mount()
-    {
-        if (!auth()->check()) {
-            // Se não estiver logado, redireciona o usuário para a página de login
-            return redirect()->route('login');
-        }
+{
+    if (!auth()->check()) {
+        return redirect()->route('login');
     }
+
+    // Recupera os dias já salvos no banco para o usuário autenticado
+    $this->savedDays = VacationRequest::where('user_id', auth()->id())
+                        ->get()
+                        ->flatMap(function ($vacation) {
+                            return json_decode($vacation->days, true);
+                        })
+                        ->toArray();
+}
     
     public function render()
 {
@@ -77,17 +85,22 @@ class Calendar extends Component
     }
 
     public function selectDay($day, $monthIndex)
-    {
-        $key = "{$monthIndex}-{$day}";
+{
+    $key = "{$monthIndex}-{$day}";
 
-        if (in_array($key, $this->selectedDays)) {
-            $this->selectedDays = array_diff($this->selectedDays, [$key]);
-            $this->remainingDays++;
-        } else {
-            $this->selectedDays[] = $key;
-            $this->remainingDays--;
-        }
+    // Impede desmarcar dias que já foram salvos no banco
+    if (in_array($key, $this->savedDays)) {
+        return;
     }
+
+    if (in_array($key, $this->selectedDays)) {
+        $this->selectedDays = array_diff($this->selectedDays, [$key]);
+        $this->remainingDays++;
+    } else {
+        $this->selectedDays[] = $key;
+        $this->remainingDays--;
+    }
+}
 
     
 
