@@ -15,49 +15,78 @@ class Calendar extends Component
     public $remainingDays = 30;
     public $savedDays = [];
 
-    public function mount()
-{
-    if (!auth()->check()) {
-        return redirect()->route('login');
-    }
+    // Atributos para controlar os checkboxes
+    public $showDisiVacations = false;
+    public $showPeVacations = false;
 
-    // Recupera os dias já salvos no banco para o usuário autenticado
-    $this->savedDays = VacationRequest::where('user_id', auth()->id())
+    public function mount()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // Recupera os dias já salvos no banco para o usuário autenticado
+        $this->savedDays = VacationRequest::where('user_id', auth()->id())
                         ->get()
                         ->flatMap(function ($vacation) {
                             return json_decode($vacation->days, true);
                         })
                         ->toArray();
-}
-    
-    public function render()
-{
-    $months = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
 
-    $daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-    $monthsData = [];
-    for ($i = $this->startMonth; $i < $this->startMonth + $this->monthsPerRow; $i++) {
-        $monthIndex = $i % 12;
-        $firstDay = Carbon::create($this->year, $monthIndex + 1, 1);
-        $daysInMonth = $firstDay->daysInMonth;
-        $startDay = $firstDay->dayOfWeek;
-
-        $monthsData[] = [
-            'name' => $months[$monthIndex],
-            'days' => $this->generateDays($startDay, $daysInMonth),
-            'daysOfWeek' => $daysOfWeek,
-            'monthIndex' => $monthIndex
-        ];
+        // Calcula os dias restantes considerando os dias já salvos
+        $this->remainingDays = max(30 - count($this->savedDays), 0);
     }
 
-    return view('livewire.calendar', compact('monthsData'))
-        ->layout('layouts.app'); // Aqui estamos referenciando o layout simplificado
-}
 
+    public function render()
+    {
+        $months = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        $daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        $monthsData = [];
+        for ($i = $this->startMonth; $i < $this->startMonth + $this->monthsPerRow; $i++) {
+            $monthIndex = $i % 12;
+            $firstDay = Carbon::create($this->year, $monthIndex + 1, 1);
+            $daysInMonth = $firstDay->daysInMonth;
+            $startDay = $firstDay->dayOfWeek;
+
+            $monthsData[] = [
+                'name' => $months[$monthIndex],
+                'days' => $this->generateDays($startDay, $daysInMonth),
+                'daysOfWeek' => $daysOfWeek,
+                'monthIndex' => $monthIndex
+            ];
+        }
+
+        // Filtra as reservas de acordo com a seleção de "DISI" e "PE"
+        $reservedDays = VacationRequest::query()
+            ->when($this->showDisiVacations, function ($query) {
+                return $query->where('team', 'DISI');
+            })
+            ->when($this->showPeVacations, function ($query) {
+                return $query->where('team', 'PE');
+            })
+            ->get()
+            ->flatMap(function ($request) {
+                return collect(json_decode($request->days))->mapWithKeys(function ($day) use ($request) {
+                    return [$day => $request->name];
+                });
+            })->toArray();
+
+        return view('livewire.calendar', [
+            'monthsData' => $monthsData,
+            'reservedDays' => $reservedDays,
+            'selectedDays' => $this->selectedDays,
+            'savedDays' => $this->savedDays,
+            'remainingDays' => $this->remainingDays
+        ])->layout('layouts.app');
+    }
+
+    // Lógica para navegação entre os meses
     public function nextMonths()
     {
         if ($this->startMonth + $this->monthsPerRow < 12) {
@@ -72,6 +101,7 @@ class Calendar extends Component
         }
     }
 
+    // Método de geração dos dias para cada mês
     private function generateDays($startDay, $daysInMonth)
     {
         $days = array_fill(0, $startDay, null);
@@ -84,35 +114,37 @@ class Calendar extends Component
         return $days;
     }
 
+    // Método para seleção de dias
     public function selectDay($day, $monthIndex)
-{
-    $key = "{$monthIndex}-{$day}";
+    {
+        $key = "{$monthIndex}-{$day}";
 
-    // Impede desmarcar dias que já foram salvos no banco
-    if (in_array($key, $this->savedDays)) {
-        return;
+        // Impede desmarcar dias que já foram salvos no banco
+        if (in_array($key, $this->savedDays)) {
+            return;
+        }
+
+        if (in_array($key, $this->selectedDays)) {
+            // Desmarca o dia selecionado e aumenta o número de dias restantes
+            $this->selectedDays = array_diff($this->selectedDays, [$key]);
+            $this->remainingDays++;
+        } else {
+            // Verifica se o usuário já selecionou 3 dias
+            if (count($this->selectedDays) >= 30) {
+                session()->flash('message', 'Você só pode selecionar até 30 dias de férias.');
+                return;
+            }
+
+            // Seleciona o novo dia
+            $this->selectedDays[] = $key;
+            $this->remainingDays--;
+        }
     }
 
-    if (in_array($key, $this->selectedDays)) {
-        $this->selectedDays = array_diff($this->selectedDays, [$key]);
-        $this->remainingDays++;
-    } else {
-        $this->selectedDays[] = $key;
-        $this->remainingDays--;
-    }
-}
-
-    
-
+    // Método para enviar a solicitação de férias
     public function sendVacationRequest()
     {
-        // Verifica se o usuário está autenticado
         if (auth()->check()) {
-            
-        
-            
-    
-            // Cria uma nova solicitação de férias
             VacationRequest::create([
                 'user_id' => auth()->id(),
                 'name' => auth()->user()->name,
@@ -125,14 +157,21 @@ class Calendar extends Component
             // Reseta os dias selecionados após a solicitação ser enviada
             $this->selectedDays = [];
             $this->remainingDays = 30;
-    
-            // Mensagem de sucesso
+
             session()->flash('message', 'Solicitação de férias enviada com sucesso!');
         } else {
-            // Se o usuário não estiver autenticado, exibe uma mensagem de erro
             session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
         }
     }
-    
 
+    // Funções para alternar a visibilidade das férias de DISI e PE
+    public function toggleDisiVacations()
+    {
+        $this->showDisiVacations = !$this->showDisiVacations;
+    }
+
+    public function togglePeVacations()
+    {
+        $this->showPeVacations = !$this->showPeVacations;
+    }
 }
