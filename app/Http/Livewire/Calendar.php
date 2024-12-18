@@ -124,14 +124,14 @@ class Calendar extends Component
             return;
         }
 
+        // Verifica se o dia já está selecionado e permite desmarcá-lo
         if (in_array($key, $this->selectedDays)) {
-            // Desmarca o dia selecionado e aumenta o número de dias restantes
             $this->selectedDays = array_diff($this->selectedDays, [$key]);
             $this->remainingDays++;
         } else {
-            // Verifica se o usuário já selecionou 3 dias
-            if (count($this->selectedDays) >= 30) {
-                session()->flash('message', 'Você só pode selecionar até 30 dias de férias.');
+            // Verifica se a soma dos dias salvos e selecionados ultrapassa 30
+            if (count($this->savedDays) + count($this->selectedDays) >= 30) {
+                session()->flash('message', 'Você não pode selecionar mais de 30 dias no total.');
                 return;
             }
 
@@ -140,6 +140,7 @@ class Calendar extends Component
             $this->remainingDays--;
         }
     }
+
 
     // Método para enviar a solicitação de férias
     public function sendVacationRequest()
