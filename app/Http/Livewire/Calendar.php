@@ -164,15 +164,4 @@ class Calendar extends Component
             session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
         }
     }
-
-    // Funções para alternar a visibilidade das férias de DISI e PE
-    public function toggleDisiVacations()
-    {
-        $this->showDisiVacations = !$this->showDisiVacations;
-    }
-
-    public function togglePeVacations()
-    {
-        $this->showPeVacations = !$this->showPeVacations;
-    }
 }

@@ -16,6 +16,19 @@
             </button>
         </div>
 
+        <!-- Botões de filtro para mostrar férias -->
+        <div class="flex justify-center space-x-4 mb-4">
+            <button wire:click="showAllVacations" class="px-6 py-3 bg-blue-600 text-white rounded-full text-lg font-semibold hover:bg-blue-500 transition">
+                Mostrar todas as férias
+            </button>
+            <button wire:click="showDISIVacations" class="px-6 py-3 bg-green-600 text-white rounded-full text-lg font-semibold hover:bg-green-500 transition">
+                Mostrar férias DISI
+            </button>
+            <button wire:click="showPEVacations" class="px-6 py-3 bg-red-600 text-white rounded-full text-lg font-semibold hover:bg-red-500 transition">
+                Mostrar férias PE
+            </button>
+        </div>
+
         <!-- Grid de meses -->
         <div class="grid grid-cols-4 gap-6">
             @foreach($monthsData as $monthData)
@@ -27,56 +40,37 @@
                         @endforeach
                     </div>
                     <div class="grid grid-cols-7 gap-2">
-                    @foreach($monthData['days'] as $day)
-                    <div class="text-center py-2">
-                        @if($day)
-                            @php
-                                $dayKey = "{$monthData['monthIndex']}-{$day}";
-                                $isSelected = in_array($dayKey, $selectedDays);
-                                $isSaved = in_array($dayKey, $savedDays);
-                                $reservedBy = $reservedDays[$dayKey] ?? null;
-                            @endphp
+                        @foreach($monthData['days'] as $day)
+                            <div class="text-center py-2">
+                                @if($day)
+                                    @php
+                                        $dayKey = "{$monthData['monthIndex']}-{$day}";
+                                        $isSelected = in_array($dayKey, $selectedDays);
+                                        $isSaved = in_array($dayKey, $savedDays);
+                                        $reservedBy = $reservedDays[$dayKey] ?? null;
+                                    @endphp
 
-                            <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
-                                class="relative inline-block w-8 h-8 text-center leading-8 cursor-pointer rounded-full 
-                                {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
-                                hover:bg-orange-500 transition group">
+                                    <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
+                                        class="relative inline-block w-8 h-8 text-center leading-8 cursor-pointer rounded-full 
+                                        {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
+                                        hover:bg-orange-500 transition group">
 
-                                {{ $day }}
+                                        {{ $day }}
 
-                                @if($reservedBy)
-                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                                        {{ $reservedBy }}
-                                    </div>
+                                        @if($reservedBy)
+                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+                                                {{ $reservedBy }}
+                                            </div>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span></span>
                                 @endif
-                            </span>
-
-
-
-
-                        @else
-                            <span></span>
-                        @endif
-                    </div>
-                @endforeach
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endforeach
-        </div>
-
-        <!-- Seção com checkboxes para DISI e PE -->
-        <div class="flex items-center mt-6">
-            <div class="flex items-center space-x-8">
-                <div class="flex items-center">
-                    <input type="checkbox" id="disi" wire:click="toggleDisiVacations" class="h-5 w-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
-                    <label for="disi" class="ml-4 text-gray-300 text-lg font-medium">Mostrar férias DISI</label> <!-- Aumentei o espaçamento com ml-4 -->
-                </div>
-
-                <div class="flex items-center">
-                    <input type="checkbox" id="pe" wire:click="togglePeVacations" class="h-5 w-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
-                    <label for="pe" class="ml-4 text-gray-300 text-lg font-medium">Mostrar férias PE</label> <!-- Aumentei o espaçamento com ml-4 -->
-                </div>
-            </div>
         </div>
 
         <!-- Exibir a quantidade de dias restantes -->
