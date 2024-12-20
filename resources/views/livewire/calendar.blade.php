@@ -22,7 +22,7 @@
             <button 
                 wire:click="showAllVacations"
                 class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ !$showDisiVacations && !$showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+                    {{ !$showDisiVacations && !$showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
             >
                 Mostrar todas as férias
             </button>
@@ -31,7 +31,7 @@
             <button 
                 wire:click="showDISIVacations"
                 class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ $showDisiVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+                    {{ $showDisiVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
             >
                 Mostrar férias DISI
             </button>
@@ -40,7 +40,7 @@
             <button 
                 wire:click="showPEVacations"
                 class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ $showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+                    {{ $showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
             >
                 Mostrar férias PE
             </button>
