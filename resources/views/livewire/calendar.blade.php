@@ -3,8 +3,7 @@
         <!-- Título do calendário -->
         <h2 class="text-3xl font-bold text-white mb-4 text-center">Férias 2025</h2>
 
-        <!-- Botões de "Mostrar férias" (agora acima do calendário) -->
-        <div class="flex justify-center space-x-8 mb-4">
+        <div class="flex justify-center gap-4 mb-4 flex-wrap">
             <!-- Botão Mostrar Todas as Férias -->
             <button 
                 wire:click="showAllVacations"
@@ -13,7 +12,7 @@
             >
                 Mostrar todas as férias
             </button>
-    
+        
             <!-- Botão Mostrar Férias DISI -->
             <button 
                 wire:click="showDISIVacations"
@@ -22,7 +21,7 @@
             >
                 Mostrar férias DISI
             </button>
-    
+        
             <!-- Botão Mostrar Férias PE -->
             <button 
                 wire:click="showPEVacations"
@@ -32,6 +31,10 @@
                 Mostrar férias PE
             </button>
         </div>
+        
+        
+        
+        
 
         <!-- Contêiner para os botões de navegação e o calendário -->
         <div class="flex items-center justify-between mb-4">
