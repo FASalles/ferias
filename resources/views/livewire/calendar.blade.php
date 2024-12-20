@@ -1,23 +1,10 @@
 <div class="bg-gray-900 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-7xl space-y-8">
-        <!-- Navegação entre meses -->
-        <div class="flex justify-between items-center mb-4">
-            <!-- Botão de voltar -->
-            <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
-                &#8592; <!-- Setas para a esquerda -->
-            </button>
+        <!-- Título do calendário -->
+        <h2 class="text-3xl font-bold text-white mb-4 text-center">Férias 2025</h2>
 
-            <!-- Título do calendário -->
-            <h2 class="text-3xl font-bold text-white">Férias 2025</h2>
-
-            <!-- Botão de avançar -->
-            <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
-                &#8594; <!-- Setas para a direita -->
-            </button>
-        </div>
-
-        <!-- Centralização dos Botões -->
-        <div class="flex justify-center space-x-8">
+        <!-- Botões de "Mostrar férias" (agora acima do calendário) -->
+        <div class="flex justify-center space-x-8 mb-4">
             <!-- Botão Mostrar Todas as Férias -->
             <button 
                 wire:click="showAllVacations"
@@ -46,48 +33,61 @@
             </button>
         </div>
 
-        <!-- Grid de meses -->
-        <div class="grid grid-cols-4 gap-6">
-            @foreach($monthsData as $monthData)
-                <div class="relative bg-gradient-to-t from-gray-800 to-gray-700 text-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold text-center mb-4">{{ $monthData['name'] }} 2025</h3>
-                    <div class="grid grid-cols-7 text-center mb-2">
-                        @foreach($monthData['daysOfWeek'] as $dayOfWeek)
-                            <div class="font-medium text-gray-400">{{ $dayOfWeek }}</div>
-                        @endforeach
+        <!-- Contêiner para os botões de navegação e o calendário -->
+        <div class="flex items-center justify-between mb-4">
+            <!-- Botão de voltar -->
+            <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
+                &#8592; <!-- Setas para a esquerda -->
+            </button>
+
+            <!-- Grid de meses -->
+            <div class="grid grid-cols-4 gap-6 flex-grow">
+                @foreach($monthsData as $monthData)
+                    <div class="relative bg-gradient-to-t from-gray-800 to-gray-700 text-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-center mb-4">{{ $monthData['name'] }} 2025</h3>
+                        <div class="grid grid-cols-7 text-center mb-2">
+                            @foreach($monthData['daysOfWeek'] as $dayOfWeek)
+                                <div class="font-medium text-gray-400">{{ $dayOfWeek }}</div>
+                            @endforeach
+                        </div>
+                        <div class="grid grid-cols-7 gap-2">
+                            @foreach($monthData['days'] as $day)
+                                <div class="text-center py-2">
+                                    @if($day)
+                                        @php
+                                            $dayKey = "{$monthData['monthIndex']}-{$day}";
+                                            $isSelected = in_array($dayKey, $selectedDays);
+                                            $isSaved = in_array($dayKey, $savedDays);
+                                            $reservedBy = $reservedDays[$dayKey] ?? null;
+                                        @endphp
+
+                                        <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
+                                            class="relative inline-block w-8 h-8 text-center leading-8 cursor-pointer rounded-full 
+                                            {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
+                                            hover:bg-orange-500 transition group">
+
+                                            {{ $day }}
+
+                                            @if($reservedBy)
+                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+                                                    {{ $reservedBy }}
+                                                </div>
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span></span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <div class="grid grid-cols-7 gap-2">
-                        @foreach($monthData['days'] as $day)
-                            <div class="text-center py-2">
-                                @if($day)
-                                    @php
-                                        $dayKey = "{$monthData['monthIndex']}-{$day}";
-                                        $isSelected = in_array($dayKey, $selectedDays);
-                                        $isSaved = in_array($dayKey, $savedDays);
-                                        $reservedBy = $reservedDays[$dayKey] ?? null;
-                                    @endphp
+                @endforeach
+            </div>
 
-                                    <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
-                                        class="relative inline-block w-8 h-8 text-center leading-8 cursor-pointer rounded-full 
-                                        {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
-                                        hover:bg-orange-500 transition group">
-
-                                        {{ $day }}
-
-                                        @if($reservedBy)
-                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                                                {{ $reservedBy }}
-                                            </div>
-                                        @endif
-                                    </span>
-                                @else
-                                    <span></span>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
+            <!-- Botão de avançar -->
+            <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
+                &#8594; <!-- Setas para a direita -->
+            </button>
         </div>
 
         <!-- Exibir a quantidade de dias restantes -->
