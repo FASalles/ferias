@@ -37,6 +37,24 @@ class Calendar extends Component
         $this->remainingDays = max(30 - count($this->savedDays), 0);
     }
 
+    // Métodos adicionados para controle de exibição
+    public function showAllVacations()
+    {
+        $this->showDisiVacations = false;
+        $this->showPeVacations = false;
+    }
+
+    public function showDISIVacations()
+    {
+        $this->showDisiVacations = true;
+        $this->showPeVacations = false;
+    }
+
+    public function showPEVacations()
+    {
+        $this->showDisiVacations = false;
+        $this->showPeVacations = true;
+    }
 
     public function render()
     {
@@ -140,7 +158,6 @@ class Calendar extends Component
             $this->remainingDays--;
         }
     }
-
 
     // Método para enviar a solicitação de férias
     public function sendVacationRequest()

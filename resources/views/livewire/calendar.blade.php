@@ -16,15 +16,32 @@
             </button>
         </div>
 
-        <!-- Botões de filtro para mostrar férias -->
-        <div class="flex justify-center space-x-4 mb-4">
-            <button wire:click="showAllVacations" class="px-6 py-3 bg-blue-600 text-white rounded-full text-lg font-semibold hover:bg-blue-500 transition">
+        <!-- Centralização dos Botões -->
+        <div class="flex justify-center space-x-8">
+            <!-- Botão Mostrar Todas as Férias -->
+            <button 
+                wire:click="showAllVacations"
+                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
+                    {{ !$showDisiVacations && !$showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+            >
                 Mostrar todas as férias
             </button>
-            <button wire:click="showDISIVacations" class="px-6 py-3 bg-green-600 text-white rounded-full text-lg font-semibold hover:bg-green-500 transition">
+    
+            <!-- Botão Mostrar Férias DISI -->
+            <button 
+                wire:click="showDISIVacations"
+                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
+                    {{ $showDisiVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+            >
                 Mostrar férias DISI
             </button>
-            <button wire:click="showPEVacations" class="px-6 py-3 bg-red-600 text-white rounded-full text-lg font-semibold hover:bg-red-500 transition">
+    
+            <!-- Botão Mostrar Férias PE -->
+            <button 
+                wire:click="showPEVacations"
+                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
+                    {{ $showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-200 text-black' }}"
+            >
                 Mostrar férias PE
             </button>
         </div>
