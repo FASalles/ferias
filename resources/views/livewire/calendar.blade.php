@@ -1,56 +1,169 @@
-<div class="bg-gray-900 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-7xl space-y-8">
-        <!-- Título do calendário -->
-        <h2 class="text-3xl font-bold text-white mb-4 text-center">Férias 2025</h2>
+<div class="bg-gray-900 min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-7xl space-y-6">
+        <h2 class="text-3xl font-bold text-white mb-3 text-center mt-3">Férias 2025</h2>
 
-        <div class="flex justify-center gap-4 mb-4 flex-wrap">
-            <!-- Botão Mostrar Todas as Férias -->
-            <button 
-                wire:click="showAllVacations"
-                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ !$showDisiVacations && !$showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
-            >
+        <style>
+            .vacation-button {
+                padding: 12px 24px;
+                border-radius: 8px;
+                border: 1px solid transparent;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+            }
+
+            .vacation-button.active {
+                background-color: #22c55e;
+                color: white;
+            }
+
+            .vacation-button.inactive {
+                background-color: #6b7280;
+                color: black;
+            }
+
+            .vacation-button:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .day-wrapper {
+                position: relative;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 9999px;
+                font-weight: 600;
+                cursor: pointer;
+                user-select: none;
+                transition: background-color 0.3s ease, color 0.3s ease;
+                border: none;
+            }
+
+            .day-wrapper.selected {
+                background-color: #22c55e;
+                color: white;
+            }
+
+            .day-wrapper.free:hover {
+                background-color: #f97316;
+                color: white;
+            }
+
+            .day-wrapper.saved {
+                background-color: #facc15 !important;
+                color: black;
+                cursor: default;
+            }
+
+            /* Nova classe para dias ocupados (mais de um usuário) */
+            .day-wrapper.occupied {
+                background-color: #ef4444 !important;
+                color: white !important;
+                cursor: default;
+            }
+
+            .tooltip {
+                position: absolute;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(31, 41, 55, 0.95);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                z-index: 50;
+                user-select: none;
+            }
+
+            .day-wrapper:hover .tooltip,
+            .day-wrapper:focus .tooltip {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Estilos para os tooltips da legenda */
+            .legend-item {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 10px;
+                cursor: default;
+                outline: none;
+            }
+            .legend-dot {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .tooltip-legend {
+                position: absolute;
+                bottom: 150%;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(31, 41, 55, 0.95);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                user-select: none;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                z-index: 1001;
+                width: max-content;
+                max-width: 240px;
+            }
+            .legend-item:hover .tooltip-legend,
+            .legend-item:focus-within .tooltip-legend {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        </style>
+
+        <div class="flex justify-center gap-4 mb-3 flex-wrap">
+            <button wire:click="setFilter('all')" 
+                    class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
                 Mostrar todas as férias
             </button>
-        
-            <!-- Botão Mostrar Férias DISI -->
-            <button 
-                wire:click="showDISIVacations"
-                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ $showDisiVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
-            >
+            <button wire:click="setFilter('disi')" 
+                    class="vacation-button {{ $activeFilter === 'disi' ? 'active' : 'inactive' }}">
                 Mostrar férias DISI
             </button>
-        
-            <!-- Botão Mostrar Férias PE -->
-            <button 
-                wire:click="showPEVacations"
-                class="vacation-button px-6 py-3 rounded-md border transition-colors duration-300
-                    {{ $showPeVacations ? 'bg-green-500 text-white' : 'bg-gray-500 text-black' }}"
-            >
+            <button wire:click="setFilter('pe')" 
+                    class="vacation-button {{ $activeFilter === 'pe' ? 'active' : 'inactive' }}">
                 Mostrar férias PE
             </button>
+            <button wire:click="setFilter('my')" 
+                    class="vacation-button {{ $activeFilter === 'my' ? 'active' : 'inactive' }}">
+                Mostrar minhas férias
+            </button>
         </div>
-        
-        
-        
-        
 
-        <!-- Contêiner para os botões de navegação e o calendário -->
-        <div class="flex items-center justify-between mb-4">
-            <!-- Botão de voltar -->
-            <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
-                &#8592; <!-- Setas para a esquerda -->
+        <div class="flex items-center justify-between mb-3">
+            <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition" aria-label="Meses anteriores">
+                &#8592;
             </button>
 
-            <!-- Grid de meses -->
             <div class="grid grid-cols-4 gap-6 flex-grow">
                 @foreach($monthsData as $monthData)
                     <div class="relative bg-gradient-to-t from-gray-800 to-gray-700 text-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold text-center mb-4">{{ $monthData['name'] }} 2025</h3>
+                        <h3 class="text-xl font-semibold text-center mb-3">{{ $monthData['name'] }} 2025</h3>
                         <div class="grid grid-cols-7 text-center mb-2">
                             @foreach($monthData['daysOfWeek'] as $dayOfWeek)
-                                <div class="font-medium text-gray-400">{{ $dayOfWeek }}</div>
+                                <div class="font-medium text-gray-400" aria-hidden="true">{{ $dayOfWeek }}</div>
                             @endforeach
                         </div>
                         <div class="grid grid-cols-7 gap-2">
@@ -64,21 +177,26 @@
                                             $reservedBy = $reservedDays[$dayKey] ?? null;
                                         @endphp
 
-                                        <span wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
-                                            class="relative inline-block w-8 h-8 text-center leading-8 cursor-pointer rounded-full 
-                                            {{ $isSaved ? 'bg-green-500 text-white' : ($isSelected ? 'bg-green-500 text-white' : 'bg-gray-600 text-white') }} 
-                                            hover:bg-orange-500 transition group">
-
+                                        <button
+                                            wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
+                                            type="button"
+                                            class="day-wrapper
+                                                {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
+                                                {{ $isSelected ? 'selected' : '' }}
+                                                {{ !$reservedBy ? 'free' : '' }}"
+                                            aria-pressed="{{ $isSelected ? 'true' : 'false' }}"
+                                            aria-label="Dia {{ $day }} de {{ $monthData['name'] }} {{ $reservedBy ? ' - reservado' : ' - disponível para seleção' }}"
+                                        >
                                             {{ $day }}
 
                                             @if($reservedBy)
-                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
-                                                    {{ $reservedBy }}
+                                                <div class="tooltip" role="tooltip" aria-hidden="true">
+                                                    {{ implode(', ', $reservedBy) }}
                                                 </div>
                                             @endif
-                                        </span>
+                                        </button>
                                     @else
-                                        <span></span>
+                                        <span aria-hidden="true">&nbsp;</span>
                                     @endif
                                 </div>
                             @endforeach
@@ -87,43 +205,140 @@
                 @endforeach
             </div>
 
-            <!-- Botão de avançar -->
-            <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition">
-                &#8594; <!-- Setas para a direita -->
+            <button wire:click="nextMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition" aria-label="Meses seguintes">
+                &#8594;
             </button>
         </div>
 
-        <!-- Exibir a quantidade de dias restantes -->
-        <div class="mt-6 text-center text-xl font-semibold text-gray-300">
-            Você deve selecionar todos os 30 dias de férias.
-            <br>
-            Dias restantes a serem selecionados: 
-            <span class="text-green-400">{{ $remainingDays }}</span>
-        </div>
+        <div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
+            @if (session()->has('message'))
+                @php
+                    $isWarning = session('type') === 'warning';
+                    $bgColor = $isWarning ? '#facc15' : '#22c55e';
+                    $textColor = $isWarning ? '#000' : '#fff';
+                @endphp
 
-        <!-- Texto para solicitar férias (aparece após 3 dias selecionados) -->
-        <div class="mt-6 text-center" style="min-height: 72px;"> <!-- Espaço reservado com altura mínima -->
-            @if(count($selectedDays) >= 3)
-                <button wire:click="sendVacationRequest"
-                        class="px-6 py-3 bg-orange-600 text-white rounded-full text-xl font-semibold hover:bg-orange-500 transition">
-                    Enviar solicitação de férias
-                </button>
-            @else
-                <div class="inline-block px-6 py-3 invisible"></div>
+                <div style="
+                    background-color: {{ $bgColor }};
+                    color: {{ $textColor }};
+                    padding: 16px 24px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    text-align: center;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    transition: opacity 0.3s ease;
+                ">
+                    {{ session('message') }}
+                </div>
             @endif
         </div>
 
-        @if(count($selectedDays) >= 3)
-            <div class="mt-4 text-center text-yellow-400 font-medium">
-                Você atingiu o limite de 3 dias selecionados.
+        @if (!$vacationRequestSent)
+            <div class="text-center text-white font-semibold">
+                @if ($remainingDays === 0)
+                    <p>Os 5 dias de férias já foram selecionados.</p>
+                @else
+                    <p>Selecione mais {{ $remainingDays }} dia(s) de férias.</p>
+                @endif
+            </div>
+
+            <div class="flex justify-center mt-3 gap-4 flex-wrap">
+                <button wire:click="clearSelectedDays" class="vacation-button inactive">
+                    Limpar seleção atual de dias
+                </button>
+
+                <button wire:click="sendVacationRequest" class="vacation-button active" {{ $remainingDays !== 0 ? 'disabled' : '' }}>
+                    Enviar pedido de férias
+                </button>
+            </div>
+        @else
+            <div class="text-center text-white font-bold mt-3 text-lg">
+                Pedido de férias enviado!
             </div>
         @endif
 
-        <!-- Mensagem de sucesso após a solicitação -->
-        @if (session()->has('message'))
-            <div class="mt-6 text-center text-green-400 font-semibold">
-                {{ session('message') }}
+    </div>
+
+    {{-- Botões Font Awesome fixos, acima da legenda --}}
+    <div
+    class="fixed z-[1000] flex flex-row items-center gap-4"
+    style="
+        right: 80px;
+        bottom: 200px;
+        background-color: rgba(31, 41, 55, 0.9);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        color: white;
+        width: auto;
+    "
+>
+    <div class="relative group">
+        <i class="fa-regular fa-file-pdf fa-2x cursor-pointer"></i>
+        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-0 pointer-events-none whitespace-nowrap z-50">
+            Baixar PDF
+        </div>
+    </div>
+
+    <div class="relative group">
+        <i class="fa-regular fa-envelope fa-2x cursor-pointer"></i>
+        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-0 pointer-events-none whitespace-nowrap z-50">
+            Enviar Email
+        </div>
+    </div>
+
+    <div class="relative group">
+        <i class="fa-solid fa-file-excel fa-2x cursor-pointer"></i>
+        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-0 pointer-events-none whitespace-nowrap z-50">
+            Baixar Excel
+        </div>
+    </div>
+</div>
+
+
+
+    {{-- Container fixo da legenda, abaixo dos ícones --}}
+    <div style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(31, 41, 55, 0.9);
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        min-width: 220px;
+        z-index: 1000;
+        ">
+        <div class="legend-item" tabindex="0" aria-describedby="tooltip-naoclicado">
+            <span class="legend-dot" style="background-color: #6b7280;"></span>
+            <span>Dia Não Clicado</span>
+            <div role="tooltip" id="tooltip-naoclicado" class="tooltip-legend">
+                Dias disponíveis que você ainda<br> não selecionou.
             </div>
-        @endif
+        </div>
+        <div class="legend-item" tabindex="0" aria-describedby="tooltip-livre">
+            <span class="legend-dot" style="background-color: #22c55e;"></span>
+            <span>Dia Livre</span>
+            <div role="tooltip" id="tooltip-livre" class="tooltip-legend">
+                Dias disponíveis para seleção,<br> sem reserva atual.
+            </div>
+        </div>
+        <div class="legend-item" tabindex="0" aria-describedby="tooltip-reservado">
+            <span class="legend-dot" style="background-color: #facc15;"></span>
+            <span>Dia Reservado</span>
+            <div role="tooltip" id="tooltip-reservado" class="tooltip-legend">
+                Dia reservado para algum usuário, <br> verifique se não é de seu turno<br> ou de sua equipe.
+            </div>
+        </div>
+        <div class="legend-item" tabindex="0" aria-describedby="tooltip-ocupado">
+            <span class="legend-dot" style="background-color: #ef4444;"></span>
+            <span>Dia Ocupado</span>
+            <div role="tooltip" id="tooltip-ocupado" class="tooltip-legend">
+                Dia ocupado por mais de um usuário,<br>indisponível para seleção.
+            </div>
+        </div>
     </div>
 </div>

@@ -12,12 +12,12 @@ class Calendar extends Component
     public $startMonth = 0;
     public $monthsPerRow = 4;
     public $selectedDays = [];
-    public $remainingDays = 30;
+    public $remainingDays = 5;
     public $savedDays = [];
 
-    // Atributos para controlar os checkboxes
-    public $showDisiVacations = false;
-    public $showPeVacations = false;
+    public $activeFilter = null; // 'all', 'disi', 'pe', 'my' ou null
+
+    public $vacationRequestSent = false;
 
     public function mount()
     {
@@ -25,35 +25,57 @@ class Calendar extends Component
             return redirect()->route('login');
         }
 
-        // Recupera os dias já salvos no banco para o usuário autenticado
+        $this->loadUserVacations();
+        $this->remainingDays = max(5 - count($this->savedDays), 0);
+    }
+
+    public function clearSelectedDays()
+    {
+        $this->selectedDays = [];
+        $this->savedDays = [];
+        $this->remainingDays = 5;
+    }
+
+    public function setFilter($filter)
+    {
+        if ($this->activeFilter === $filter) {
+            $this->activeFilter = null; // desativa o filtro se clicar de novo
+        } else {
+            $this->activeFilter = $filter;
+        }
+
+        if ($this->activeFilter === 'my') {
+            $this->loadUserVacations();
+            $this->remainingDays = max(5 - count($this->savedDays), 0);
+        }
+    }
+
+    private function loadUserVacations()
+    {
         $this->savedDays = VacationRequest::where('user_id', auth()->id())
-                        ->get()
-                        ->flatMap(function ($vacation) {
-                            return json_decode($vacation->days, true);
-                        })
-                        ->toArray();
-
-        // Calcula os dias restantes considerando os dias já salvos
-        $this->remainingDays = max(30 - count($this->savedDays), 0);
+            ->get()
+            ->flatMap(function ($vacation) {
+                return json_decode($vacation->days, true);
+            })
+            ->toArray();
     }
 
-    // Métodos adicionados para controle de exibição
-    public function showAllVacations()
+    public function deleteUserVacationDays()
     {
-        $this->showDisiVacations = false;
-        $this->showPeVacations = false;
-    }
+        $userId = auth()->id();
 
-    public function showDISIVacations()
-    {
-        $this->showDisiVacations = true;
-        $this->showPeVacations = false;
-    }
+        VacationRequest::where('user_id', $userId)->delete();
 
-    public function showPEVacations()
-    {
-        $this->showDisiVacations = false;
-        $this->showPeVacations = true;
+        // Atualizar visualmente
+        $this->selectedDays = [];
+        $this->vacationRequestSent = false;
+        $this->loadUserVacations();
+
+        // Recalcular os dias restantes
+        $this->remainingDays = 5;
+
+        session()->flash('message', 'Todos os dias de férias foram deletados com sucesso.');
+        session()->flash('type', 'success');
     }
 
     public function render()
@@ -80,31 +102,55 @@ class Calendar extends Component
             ];
         }
 
-        // Filtra as reservas de acordo com a seleção de "DISI" e "PE"
-        $reservedDays = VacationRequest::query()
-            ->when($this->showDisiVacations, function ($query) {
-                return $query->where('team', 'DISI');
-            })
-            ->when($this->showPeVacations, function ($query) {
-                return $query->where('team', 'PE');
-            })
-            ->get()
-            ->flatMap(function ($request) {
-                return collect(json_decode($request->days))->mapWithKeys(function ($day) use ($request) {
-                    return [$day => $request->name];
-                });
-            })->toArray();
+        $reservedDaysQuery = VacationRequest::query();
+
+        switch ($this->activeFilter) {
+            case 'all':
+                // mostra todas as férias (sem filtro por time)
+                break;
+            case 'disi':
+                $reservedDaysQuery->where('team', 'DISI');
+                break;
+            case 'pe':
+                $reservedDaysQuery->where('team', 'PE');
+                break;
+            case 'my':
+                $reservedDaysQuery->where('user_id', auth()->id());
+                break;
+            default:
+                // Nenhum filtro ativo, não mostra férias
+                $reservedDaysQuery->whereRaw('0 = 1'); // consulta vazia
+                break;
+        }
+
+        $reservedDaysRaw = $reservedDaysQuery->get();
+
+        // Construir array chave: "monthIndex-day" => array de nomes que reservaram o dia
+        $reservedDays = [];
+
+        foreach ($reservedDaysRaw as $request) {
+            $days = json_decode($request->days, true);
+            if (is_array($days)) {
+                foreach ($days as $dayKey) {
+                    if (!isset($reservedDays[$dayKey])) {
+                        $reservedDays[$dayKey] = [];
+                    }
+                    $reservedDays[$dayKey][] = $request->name;
+                }
+            }
+        }
 
         return view('livewire.calendar', [
             'monthsData' => $monthsData,
             'reservedDays' => $reservedDays,
             'selectedDays' => $this->selectedDays,
             'savedDays' => $this->savedDays,
-            'remainingDays' => $this->remainingDays
+            'remainingDays' => $this->remainingDays,
+            'vacationRequestSent' => $this->vacationRequestSent,
+            'activeFilter' => $this->activeFilter,
         ])->layout('layouts.app');
     }
 
-    // Lógica para navegação entre os meses
     public function nextMonths()
     {
         if ($this->startMonth + $this->monthsPerRow < 12) {
@@ -119,7 +165,6 @@ class Calendar extends Component
         }
     }
 
-    // Método de geração dos dias para cada mês
     private function generateDays($startDay, $daysInMonth)
     {
         $days = array_fill(0, $startDay, null);
@@ -132,53 +177,78 @@ class Calendar extends Component
         return $days;
     }
 
-    // Método para seleção de dias
     public function selectDay($day, $monthIndex)
     {
         $key = "{$monthIndex}-{$day}";
 
-        // Impede desmarcar dias que já foram salvos no banco
         if (in_array($key, $this->savedDays)) {
             return;
         }
 
-        // Verifica se o dia já está selecionado e permite desmarcá-lo
         if (in_array($key, $this->selectedDays)) {
-            $this->selectedDays = array_diff($this->selectedDays, [$key]);
+            $this->selectedDays = array_values(array_diff($this->selectedDays, [$key]));
             $this->remainingDays++;
         } else {
-            // Verifica se a soma dos dias salvos e selecionados ultrapassa 30
-            if (count($this->savedDays) + count($this->selectedDays) >= 30) {
-                session()->flash('message', 'Você não pode selecionar mais de 30 dias no total.');
+            if (count($this->selectedDays) >= 5) {
+                session()->flash('message', 'Você não pode selecionar mais de 5 dias de férias.');
+                session()->flash('type', 'warning');
                 return;
             }
 
-            // Seleciona o novo dia
             $this->selectedDays[] = $key;
             $this->remainingDays--;
         }
+
+        if (count($this->selectedDays) > 5) {
+            $this->selectedDays = array_slice($this->selectedDays, 0, 5);
+            $this->remainingDays = 0;
+        }
     }
 
-    // Método para enviar a solicitação de férias
     public function sendVacationRequest()
     {
-        if (auth()->check()) {
-            VacationRequest::create([
-                'user_id' => auth()->id(),
-                'name' => auth()->user()->name,
-                'status' => 'pending',  // O status pode ser 'pending' por padrão
-                'team' => auth()->user()->team,  // Adicionando o campo 'team' do usuário
-                'role' => auth()->user()->roles,  // Adicionando o campo 'role' do usuário
-                'days' => json_encode($this->selectedDays), // Armazena os dias selecionados como JSON
-            ]);
-
-            // Reseta os dias selecionados após a solicitação ser enviada
-            $this->selectedDays = [];
-            $this->remainingDays = 30;
-
-            session()->flash('message', 'Solicitação de férias enviada com sucesso!');
-        } else {
+        if (!auth()->check()) {
             session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
+            session()->flash('type', 'error');
+            return;
         }
+
+        $userId = auth()->id();
+
+        // Buscar dias já reservados
+        $existingDaysCount = VacationRequest::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->get()
+            ->flatMap(function ($vacation) {
+                return json_decode($vacation->days, true);
+            })
+            ->unique()
+            ->count();
+
+        $newDaysCount = count($this->selectedDays);
+
+        if ($existingDaysCount + $newDaysCount > 5) {
+            session()->flash('message', 'Você não pode reservar mais que 5 dias de férias no total.');
+            session()->flash('type', 'warning');
+            return;
+        }
+
+        VacationRequest::create([
+            'user_id' => $userId,
+            'name' => auth()->user()->name,
+            'status' => 'pending',
+            'team' => auth()->user()->team,
+            'role' => auth()->user()->roles,
+            'days' => json_encode($this->selectedDays),
+        ]);
+
+        $this->selectedDays = [];
+        $this->remainingDays = 5 - $existingDaysCount - $newDaysCount;
+        $this->vacationRequestSent = true;
+
+        session()->flash('message', 'Solicitação de férias enviada com sucesso!');
+        session()->flash('type', 'success');
+
+        $this->loadUserVacations();
     }
 }
