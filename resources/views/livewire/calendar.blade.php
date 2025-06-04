@@ -131,9 +131,20 @@
                 opacity: 1;
                 pointer-events: auto;
             }
+            
+            [data-megaphone-banner] svg,
+.megaphone-banner svg,
+[class*="megaphone"] svg {
+    width: 50px !important;
+    height: 50px !important;
+    max-width: unset !important;
+    max-height: unset !important;
+}
         </style>
 
         <livewire:megaphone />
+        
+        
 
         <div class="flex justify-center gap-4 mb-3 flex-wrap">
             <button wire:click="setFilter('all')" 
@@ -252,27 +263,33 @@
                         Limpar seleção atual de dias
                     </button>
             
-                    <button wire:click="sendVacationRequest" class="vacation-button active" {{ $remainingDays !== 0 ? 'disabled' : '' }}>
+                    <button 
+                        wire:click="sendVacationRequest" 
+                        class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
+                        {{ $remainingDays !== 0 ? 'disabled' : '' }}>
                         Enviar pedido de férias
                     </button>
+
                 </div>
             
                 <!-- Botão abaixo -->
-                <div>
-                    <button 
-                        wire:click="deleteUserVacationDays"
-                        class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
-                    >
-                        Deletar do BD os dias de férias do usuário logado
-                    </button>
-                </div>
+                @if($activeFilter === 'my' && count($savedDays) > 0)
+                    <div>
+                        <button 
+                            wire:click="deleteUserVacationDays"
+                            class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+                        >
+                            Deletar do BD os dias de férias do usuário logado
+                        </button>
+                    </div>
+                    @endif
             
             </div>
             
         @else
-            <div class="text-center text-white font-bold mt-3 text-lg">
+            {{-- <div class="text-center text-white font-bold mt-3 text-lg">
                 Pedido de férias enviado!
-            </div>
+            </div> --}}
         @endif
 
     </div>
