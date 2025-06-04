@@ -1,6 +1,8 @@
 <div class="bg-gray-900 min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-7xl space-y-6">
-        <h2 class="text-3xl font-bold text-white mb-3 text-center mt-3">Férias 2025</h2>
+        <h2 class="text-3xl font-bold text-white text-center mt-3" style="margin-bottom: 6px;">Férias 2025</h2>
+
+
 
         <style>
             .vacation-button {
@@ -26,6 +28,14 @@
                 transform: scale(1.05);
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
+
+            .vacation-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none; /* evita clique */
+    transition: opacity 0.3s ease;
+}
+
 
             .day-wrapper {
                 position: relative;
@@ -132,38 +142,65 @@
                 pointer-events: auto;
             }
             
+            [data-megaphone-banner],
+            .megaphone-banner,
+            [class*="megaphone"] {
+                display: flex;           /* Garantir que possa usar margin-left */
+                margin-left: auto;       /* Empurra para a direita */
+            }
+
             [data-megaphone-banner] svg,
-.megaphone-banner svg,
-[class*="megaphone"] svg {
-    width: 50px !important;
-    height: 50px !important;
-    max-width: unset !important;
-    max-height: unset !important;
-}
+            .megaphone-banner svg,
+            [class*="megaphone"] svg {
+                width: 50px !important;
+                height: 50px !important;
+                max-width: unset !important;
+                max-height: unset !important;
+
+                /* Cor dourada */
+                color: #D4AF37;   /* Tom dourado clássico */
+                fill: #D4AF37;    /* Garante preenchimento dourado */
+            }
+
         </style>
 
-        <livewire:megaphone />
+        
+
+
+        
+
         
         
 
-        <div class="flex justify-center gap-4 mb-3 flex-wrap">
-            <button wire:click="setFilter('all')" 
-                    class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
-                Mostrar todas as férias
-            </button>
-            <button wire:click="setFilter('disi')" 
-                    class="vacation-button {{ $activeFilter === 'disi' ? 'active' : 'inactive' }}">
-                Mostrar férias DISI
-            </button>
-            <button wire:click="setFilter('pe')" 
-                    class="vacation-button {{ $activeFilter === 'pe' ? 'active' : 'inactive' }}">
-                Mostrar férias PE
-            </button>
-            <button wire:click="setFilter('my')" 
-                    class="vacation-button {{ $activeFilter === 'my' ? 'active' : 'inactive' }}">
-                Mostrar minhas férias
-            </button>
-        </div>
+<div class="relative">
+    <!-- Botões centralizados -->
+    <div class="flex justify-center gap-4 mt-1.5 flex-wrap">
+        <button wire:click="setFilter('all')" 
+                class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
+            Mostrar todas as férias
+        </button>
+        <button wire:click="setFilter('disi')" 
+                class="vacation-button {{ $activeFilter === 'disi' ? 'active' : 'inactive' }}">
+            Mostrar férias DISI
+        </button>
+        <button wire:click="setFilter('pe')" 
+                class="vacation-button {{ $activeFilter === 'pe' ? 'active' : 'inactive' }}">
+            Mostrar férias PE
+        </button>
+        <button wire:click="setFilter('my')" 
+                class="vacation-button {{ $activeFilter === 'my' ? 'active' : 'inactive' }}">
+            Mostrar minhas férias
+        </button>
+    </div>
+
+    <!-- Ícone flutuando à direita -->
+    <div class="absolute top-0" style="right: 52px;">
+        <livewire:megaphone />
+    </div>
+    
+    
+    
+</div>
 
         <div class="flex items-center justify-between mb-3">
             <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition" aria-label="Meses anteriores">
@@ -276,11 +313,13 @@
                 @if($activeFilter === 'my' && count($savedDays) > 0)
                     <div>
                         <button 
-                            wire:click="deleteUserVacationDays"
-                            class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
-                        >
-                            Deletar do BD os dias de férias do usuário logado
-                        </button>
+                        wire:click="deleteUserVacationDays"
+                        onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
+                        class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+                    >
+                        Deletar do BD os dias de férias do usuário logado
+                    </button>
+
                     </div>
                     @endif
             
@@ -288,7 +327,7 @@
             
         @else
             {{-- <div class="text-center text-white font-bold mt-3 text-lg">
-                Pedido de férias enviado!
+                
             </div> --}}
         @endif
 

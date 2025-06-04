@@ -211,6 +211,11 @@ class Calendar extends Component
             session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
             session()->flash('type', 'error');
             return;
+
+            $this->vacationRequestSent = true;
+
+    // Emite um evento para o megaphone
+    $this->emit('showMegaphoneNotification', 'Pedido de férias enviado com sucesso!');
         }
 
         $userId = auth()->id();
