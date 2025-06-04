@@ -244,23 +244,31 @@
                 @endif
             </div>
 
-            <div class="flex justify-center mt-3 gap-4 flex-wrap">
-                <button wire:click="clearSelectedDays" class="vacation-button inactive">
-                    Limpar seleção atual de dias
-                </button>
+            <div class="flex flex-col items-center mt-3 gap-4">
 
-                <button wire:click="sendVacationRequest" class="vacation-button active" {{ $remainingDays !== 0 ? 'disabled' : '' }}>
-                    Enviar pedido de férias
-                </button>
-
-                <!-- Novo Botão: Deletar férias do BD -->
-    <button 
-    wire:click="deleteUserVacationDays"
-    class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
->
-    Deletar do BD os dias de férias do usuário logado
-</button>
+                <!-- Botões lado a lado -->
+                <div class="flex gap-4 flex-wrap justify-center">
+                    <button wire:click="clearSelectedDays" class="vacation-button inactive">
+                        Limpar seleção atual de dias
+                    </button>
+            
+                    <button wire:click="sendVacationRequest" class="vacation-button active" {{ $remainingDays !== 0 ? 'disabled' : '' }}>
+                        Enviar pedido de férias
+                    </button>
+                </div>
+            
+                <!-- Botão abaixo -->
+                <div>
+                    <button 
+                        wire:click="deleteUserVacationDays"
+                        class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+                    >
+                        Deletar do BD os dias de férias do usuário logado
+                    </button>
+                </div>
+            
             </div>
+            
         @else
             <div class="text-center text-white font-bold mt-3 text-lg">
                 Pedido de férias enviado!
