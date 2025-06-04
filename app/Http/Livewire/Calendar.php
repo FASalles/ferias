@@ -21,8 +21,6 @@ class Calendar extends Component
 
     public $vacationRequestSent = false;
 
-    
-
     public function mount()
     {
         if (!auth()->check()) {
@@ -215,8 +213,6 @@ class Calendar extends Component
             session()->flash('message', 'Você precisa estar logado para enviar a solicitação de férias.');
             session()->flash('type', 'error');
             return;
-
-            $this->vacationRequestSent = true;
         }
 
         $userId = auth()->id();
@@ -258,22 +254,32 @@ class Calendar extends Component
         $this->loadUserVacations();
     }
 
-    public function notificarUser1()
-{
-    $user = \App\Models\User::find(1);
+    public function notificarAdmins()
+    {
+        $admins = User::whereJsonContains('roles', 'admin')->get();
 
-    if ($user) {
-        $user->notify(new Important(
-            title: 'Notificação de teste',
-            body: '<span style="font-size: 3em;">1</span> – Você recebeu uma notificação pelo botão!',
-        ));
+        if ($admins->isEmpty()) {
+            session()->flash('message', 'Nenhum administrador encontrado.');
+            session()->flash('type', 'error');
+            return;
+        }
 
-        session()->flash('message', 'Notificação enviada!');
-        session()->flash('type', 'success');
-    } else {
-        session()->flash('message', 'Usuário não encontrado.');
-        session()->flash('type', 'error');
+        foreach ($admins as $admin) {
+            $admin->notify(new Important(
+                title: 'Solicitação de férias',
+                body: '❶ – Você recebeu uma notificação de novo pedido de férias!'
+            ));
+        }
     }
-}
 
+    // Método que junta enviar pedido + notificar admins
+    public function sendVacationRequestAndNotify()
+    {
+        $this->sendVacationRequest();
+
+        // Só notifica se o pedido foi enviado com sucesso
+        if ($this->vacationRequestSent) {
+            $this->notificarAdmins();
+        }
+    }
 }

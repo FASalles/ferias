@@ -301,11 +301,11 @@
                     </button>
             
                     <button 
-                        wire:click="sendVacationRequest" 
-                        class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
-                        {{ $remainingDays !== 0 ? 'disabled' : '' }}>
-                        Enviar pedido de férias
-                    </button>
+    wire:click="sendVacationRequestAndNotify" 
+    class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
+    {{ $remainingDays !== 0 ? 'disabled' : '' }}>
+    Enviar pedido de férias
+</button>
 
                 </div>
             
@@ -415,7 +415,6 @@
             </div>
         </div>
     </div>
-    <button wire:click="notificarUser1" class="btn btn-primary">
-        Notificar Usuário 1
-    </button>
+    
+    
 </div>
