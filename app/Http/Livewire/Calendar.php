@@ -4,7 +4,9 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\VacationRequest;
+use MBarlow\Megaphone\Types\Important;
 
 class Calendar extends Component
 {
@@ -18,6 +20,8 @@ class Calendar extends Component
     public $activeFilter = null; // 'all', 'disi', 'pe', 'my' ou null
 
     public $vacationRequestSent = false;
+
+    
 
     public function mount()
     {
@@ -213,9 +217,6 @@ class Calendar extends Component
             return;
 
             $this->vacationRequestSent = true;
-
-    // Emite um evento para o megaphone
-    $this->emit('showMegaphoneNotification', 'Pedido de férias enviado com sucesso!');
         }
 
         $userId = auth()->id();
@@ -256,4 +257,23 @@ class Calendar extends Component
 
         $this->loadUserVacations();
     }
+
+    public function notificarUser1()
+{
+    $user = \App\Models\User::find(1);
+
+    if ($user) {
+        $user->notify(new Important(
+            title: 'Notificação de teste',
+            body: '<span style="font-size: 3em;">1</span> – Você recebeu uma notificação pelo botão!',
+        ));
+
+        session()->flash('message', 'Notificação enviada!');
+        session()->flash('type', 'success');
+    } else {
+        session()->flash('message', 'Usuário não encontrado.');
+        session()->flash('type', 'error');
+    }
+}
+
 }

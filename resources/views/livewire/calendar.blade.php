@@ -415,4 +415,7 @@
             </div>
         </div>
     </div>
+    <button wire:click="notificarUser1" class="btn btn-primary">
+        Notificar Usuário 1
+    </button>
 </div>
