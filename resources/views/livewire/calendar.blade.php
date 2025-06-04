@@ -133,6 +133,8 @@
             }
         </style>
 
+        <livewire:megaphone />
+
         <div class="flex justify-center gap-4 mb-3 flex-wrap">
             <button wire:click="setFilter('all')" 
                     class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
@@ -250,6 +252,14 @@
                 <button wire:click="sendVacationRequest" class="vacation-button active" {{ $remainingDays !== 0 ? 'disabled' : '' }}>
                     Enviar pedido de férias
                 </button>
+
+                <!-- Novo Botão: Deletar férias do BD -->
+    <button 
+    wire:click="deleteUserVacationDays"
+    class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+>
+    Deletar do BD os dias de férias do usuário logado
+</button>
             </div>
         @else
             <div class="text-center text-white font-bold mt-3 text-lg">
