@@ -73,10 +73,13 @@
 <button
     wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
     type="button"
+    @if($userHasVacation) disabled @endif
     class="day-wrapper
-        {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
-        {{ $isSelected ? 'selected' : '' }}
-        {{ !$reservedBy && !$isHoliday ? 'free' : '' }}"
+    {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
+    {{ $isSelected ? 'selected' : '' }}
+    {{ !$reservedBy && !$isHoliday ? 'free' : '' }}
+    {{ $userHasVacation ? 'cursor-not-allowed opacity-50' : '' }}"
+
     x-data="{
         showHolidays: @entangle('showHolidays'),
         isHoliday: false,
