@@ -131,17 +131,25 @@ class Calendar extends Component
 
     public function updatedShowHolidays($value)
 {
+    $feriados = [];
+
     if ($value) {
-        if (!in_array('2-5', $this->selectedDays)) {
-            $this->selectedDays[] = '2-5';
+        foreach ($feriados as $dia) {
+            if (!in_array($dia, $this->selectedDays)) {
+                $this->selectedDays[] = $dia;
+            }
         }
     } else {
-        $this->selectedDays = array_filter($this->selectedDays, fn($day) => $day !== '2-5');
+        $this->selectedDays = array_filter(
+            $this->selectedDays,
+            fn($day) => !in_array($day, $feriados)
+        );
     }
 
     // Força o Livewire a detectar a mudança no array
     $this->selectedDays = array_values($this->selectedDays);
 }
+
 
     
     public function render()

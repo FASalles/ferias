@@ -93,8 +93,49 @@
         {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
         {{ $isSelected ? 'selected' : '' }}
         {{ !$reservedBy && !$isHoliday ? 'free' : '' }}"
-    x-data="{ showHolidays: @entangle('showHolidays'), isFeb5: {{ $monthData['monthIndex'] === 2 && $day === 5 ? 'true' : 'false' }} }"
-    x-bind:style="(isFeb5 && showHolidays) ? 'background-color: #3b82f6; color: white;' : ''"
+    x-data="{
+        showHolidays: @entangle('showHolidays'),
+
+        // Feriados Nacionais
+        isJan1: {{ $monthData['monthIndex'] === 0 && $day === 1 ? 'true' : 'false' }},
+        isApr18: {{ $monthData['monthIndex'] === 3 && $day === 18 ? 'true' : 'false' }},
+        isApr21: {{ $monthData['monthIndex'] === 3 && $day === 21 ? 'true' : 'false' }},
+        isMay1: {{ $monthData['monthIndex'] === 4 && $day === 1 ? 'true' : 'false' }},
+        isSep7: {{ $monthData['monthIndex'] === 8 && $day === 7 ? 'true' : 'false' }},
+        isOct12: {{ $monthData['monthIndex'] === 9 && $day === 12 ? 'true' : 'false' }},
+        isNov2: {{ $monthData['monthIndex'] === 10 && $day === 2 ? 'true' : 'false' }},
+        isNov15: {{ $monthData['monthIndex'] === 10 && $day === 15 ? 'true' : 'false' }},
+        isDec25: {{ $monthData['monthIndex'] === 11 && $day === 25 ? 'true' : 'false' }},
+
+        // Feriados Municipais (Rio de Janeiro)
+        isJan20: {{ $monthData['monthIndex'] === 0 && $day === 20 ? 'true' : 'false' }},
+        isMar1: {{ $monthData['monthIndex'] === 2 && $day === 1 ? 'true' : 'false' }},
+
+        // Feriados Estaduais (Rio de Janeiro)
+        isMar4: {{ $monthData['monthIndex'] === 2 && $day === 4 ? 'true' : 'false' }},
+        isApr23: {{ $monthData['monthIndex'] === 3 && $day === 23 ? 'true' : 'false' }},
+        isNov20: {{ $monthData['monthIndex'] === 10 && $day === 20 ? 'true' : 'false' }},
+
+        // Pontos Facultativos
+        isMar3: {{ $monthData['monthIndex'] === 2 && $day === 3 ? 'true' : 'false' }},
+        isMar5: {{ $monthData['monthIndex'] === 2 && $day === 5 ? 'true' : 'false' }},
+        isJun19: {{ $monthData['monthIndex'] === 5 && $day === 19 ? 'true' : 'false' }},
+        isJun20: {{ $monthData['monthIndex'] === 5 && $day === 20 ? 'true' : 'false' }},
+        isOct28: {{ $monthData['monthIndex'] === 9 && $day === 28 ? 'true' : 'false' }},
+        isDec24: {{ $monthData['monthIndex'] === 11 && $day === 24 ? 'true' : 'false' }},
+        isDec31: {{ $monthData['monthIndex'] === 11 && $day === 31 ? 'true' : 'false' }},
+
+        // Feriados extras anteriores
+        isFeb5: {{ $monthData['monthIndex'] === 1 && $day === 5 ? 'true' : 'false' }},
+        isFeb10: {{ $monthData['monthIndex'] === 1 && $day === 10 ? 'true' : 'false' }},
+    }"
+    x-bind:style="showHolidays && (
+        isJan1 || isApr18 || isApr21 || isMay1 || isSep7 || isOct12 || isNov2 || isNov15 || isDec25 ||
+        isJan20 || isMar1 ||
+        isMar4 || isApr23 || isNov20 ||
+        isMar3 || isMar5 || isJun19 || isJun20 || isOct28 || isDec24 || isDec31 ||
+        isFeb5 || isFeb10
+    ) ? 'background-color: #3b82f6; color: white;' : ''"
     aria-pressed="{{ $isSelected ? 'true' : 'false' }}"
     aria-label="Dia {{ $day }} de {{ $monthData['name'] }} {{ $reservedBy ? ' - reservado' : ' - disponível para seleção' }}"
 >
@@ -106,6 +147,9 @@
         </div>
     @endif
 </button>
+
+
+
 
 @else
     <span aria-hidden="true">&nbsp;</span>
