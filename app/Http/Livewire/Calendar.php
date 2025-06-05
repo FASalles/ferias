@@ -78,15 +78,16 @@ class Calendar extends Component
     ];
 
     public function mount()
-    {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
-        $this->loadUserVacations();
-        $this->remainingDays = max(5 - count($this->savedDays), 0);
-        $this->users = User::orderBy('name')->get(['id', 'name'])->toArray();
+{
+    if (!auth()->check()) {
+        return redirect()->route('login');
     }
+
+    $this->clearSelectedDays(); // limpa todos os dias no estado inicial
+
+    $this->users = User::orderBy('name')->get(['id', 'name'])->toArray();
+}
+
 
     public function updatedSelectedUser($userId)
     {
@@ -171,6 +172,7 @@ class Calendar extends Component
             $this->activeFilter = $filter;
 
             if ($this->activeFilter === 'my') {
+                $this->selectedUser = ''; // limpa o dropdown
                 $this->loadUserVacations();
                 $this->remainingDays = max(5 - count($this->savedDays), 0);
             }
@@ -182,15 +184,20 @@ class Calendar extends Component
     }
 
     private function loadUserVacations()
-    {
-        $this->savedDays = VacationRequest::where('user_id', auth()->id())
-            ->whereIn('status', ['pending', 'approved'])
-            ->get()
-            ->flatMap(function ($vacation) {
-                return json_decode($vacation->days, true) ?: [];
-            })
-            ->toArray();
-    }
+{
+    $this->selectedUser = ''; // limpa o dropdown
+
+    $this->savedDays = VacationRequest::where('user_id', auth()->id())
+        ->whereIn('status', ['pending', 'approved'])
+        ->get()
+        ->flatMap(function ($vacation) {
+            return json_decode($vacation->days, true) ?: [];
+        })
+        ->toArray();
+
+    $this->selectedDays = $this->savedDays;
+}
+
 
     public function deleteUserVacationDays()
     {
