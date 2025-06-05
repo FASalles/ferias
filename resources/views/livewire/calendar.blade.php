@@ -193,50 +193,51 @@
     @endif
 </div>
 
-        @if (!$vacationRequestSent)
-            <div class="text-center text-white font-semibold">
-                @if ($remainingDays === 0)
-                    <p>Os 5 dias de férias já foram selecionados.</p>
-                @else
-                    <p>Selecione mais {{ $remainingDays }} dia(s) de férias.</p>
-                @endif
-            </div>
-
-            <div class="flex flex-col items-center mt-3 gap-4">
-
-                <!-- Botões lado a lado -->
-                <div class="flex gap-4 flex-wrap justify-center">
-                    <button wire:click="clearSelectedDays" class="vacation-button inactive">
-                        Limpar seleção atual de dias
-                    </button>
-            
-                    <button 
-                        wire:click="sendVacationRequestAndNotify" 
-                        class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
-                        {{ $remainingDays !== 0 ? 'disabled' : '' }}>
-                        Enviar pedido de férias
-                    </button>
-
-                </div>
-            
-                <!-- Botão abaixo -->
-                @if($activeFilter === 'my' && count($savedDays) > 0)
-                    <div>
-                        <button 
-                            wire:click="deleteUserVacationDays"
-                            onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
-                            class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
-                        >
-                            Deletar do BD os dias de férias do usuário logado
-                        </button>
-                    </div>
-                @endif
-            
-            </div>
-            
+@if (!$vacationRequestSent)
+<div class="text-center text-white font-semibold">
+    @if (!$userHasVacation)
+        @if ($remainingDays === 0)
+            <p>Os 5 dias de férias já foram selecionados.</p>
         @else
-            {{-- Aqui você pode colocar uma mensagem pós envio --}}
+            <p>Selecione mais {{ $remainingDays }} dia(s) de férias.</p>
         @endif
+    @endif
+</div>
+
+<div class="flex flex-col items-center mt-3 gap-4">
+    <!-- Botões lado a lado -->
+    <div class="flex gap-4 flex-wrap justify-center">
+        <button 
+    wire:click="clearSelectedDays" 
+    class="vacation-button {{ count($selectedDays) === 0 ? 'inactive opacity-50 cursor-not-allowed' : 'inactive' }}" 
+    {{ count($selectedDays) === 0 ? 'disabled' : '' }}>
+    Limpar seleção atual de dias
+</button>
+    
+<button 
+wire:click="sendVacationRequestAndNotify" 
+class="vacation-button {{ $remainingDays === 0 && !$userHasVacation ? 'active' : 'inactive opacity-50 cursor-not-allowed' }}" 
+{{ $remainingDays !== 0 || $userHasVacation ? 'disabled' : '' }}>
+Enviar pedido de férias
+</button>
+
+    </div>
+
+    <!-- Botão abaixo -->
+    @if($activeFilter === 'my' && count($savedDays) > 0)
+        <div>
+            <button 
+                wire:click="deleteUserVacationDays"
+                onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
+                class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+            >
+                Deletar do BD os dias de férias do usuário logado
+            </button>
+        </div>
+    @endif
+</div>
+@endif
+
 
     </div>
 
