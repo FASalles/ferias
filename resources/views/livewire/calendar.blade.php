@@ -2,37 +2,63 @@
     <div class="w-full max-w-7xl space-y-6">
         <h2 class="text-3xl font-bold text-white text-center mt-3" style="margin-bottom: 6px;">Férias 2025</h2>
 
-        
+        <div class="relative">
+            <!-- Botões centralizados -->
+            <div class="flex justify-center gap-4 mt-1.5 flex-wrap">
+                <button wire:click="setFilter('all')" 
+                        class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
+                    Mostrar todas as férias
+                </button>
+                <button wire:click="setFilter('disi')" 
+                        class="vacation-button {{ $activeFilter === 'disi' ? 'active' : 'inactive' }}">
+                    Mostrar férias DISI
+                </button>
+                <button wire:click="setFilter('pe')" 
+                        class="vacation-button {{ $activeFilter === 'pe' ? 'active' : 'inactive' }}">
+                    Mostrar férias PE
+                </button>
+                <button wire:click="setFilter('my')" 
+                        class="vacation-button {{ $activeFilter === 'my' ? 'active' : 'inactive' }}">
+                    Mostrar minhas férias
+                </button>
+            </div>
 
-<div class="relative">
-    <!-- Botões centralizados -->
-    <div class="flex justify-center gap-4 mt-1.5 flex-wrap">
-        <button wire:click="setFilter('all')" 
-                class="vacation-button {{ $activeFilter === 'all' ? 'active' : 'inactive' }}">
-            Mostrar todas as férias
-        </button>
-        <button wire:click="setFilter('disi')" 
-                class="vacation-button {{ $activeFilter === 'disi' ? 'active' : 'inactive' }}">
-            Mostrar férias DISI
-        </button>
-        <button wire:click="setFilter('pe')" 
-                class="vacation-button {{ $activeFilter === 'pe' ? 'active' : 'inactive' }}">
-            Mostrar férias PE
-        </button>
-        <button wire:click="setFilter('my')" 
-                class="vacation-button {{ $activeFilter === 'my' ? 'active' : 'inactive' }}">
-            Mostrar minhas férias
-        </button>
-    </div>
+            <!-- Ícone flutuando à direita -->
+            <div class="flex items-center absolute top-0" style="right: 92px;">
 
-    <!-- Ícone flutuando à direita -->
-    <div class="absolute top-0" style="right: 52px;">
-        <livewire:megaphone />
-    </div>
-    
-    
-    
-</div>
+                {{-- Seu megaphone --}}
+                <livewire:megaphone />
+            
+                {{-- Lupa que mostra/oculta o campo --}}
+                <button wire:click="toggleSearch" class="ml-3 p-2 hover:bg-gray-200 rounded" type="button" aria-label="Buscar">
+                    🔍
+                </button>
+            
+                {{-- Campo de busca só aparece quando showSearch é true --}}
+                @if($showSearch)
+                    <div class="ml-2 relative">
+                        <input
+                            type="text"
+                            wire:model.debounce.300ms="query"
+                            placeholder="Buscar usuários..."
+                            class="border rounded px-2 py-1"
+                            autofocus
+                        />
+            
+                        @if(!empty($searchResults))
+                            <ul class="absolute bg-white border rounded mt-1 max-h-48 overflow-auto w-full z-50">
+                                @foreach($searchResults as $result)
+                                    <li class="p-2 hover:bg-gray-200 cursor-pointer">
+                                        {{ $result['name'] }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                @endif
+            
+            </div>
+        </div>
 
         <div class="flex items-center justify-between mb-3">
             <button wire:click="prevMonths" class="text-3xl p-3 bg-orange-700 text-white rounded-full hover:bg-orange-600 transition" aria-label="Meses anteriores">
@@ -52,34 +78,38 @@
                             @foreach($monthData['days'] as $day)
                                 <div class="text-center py-2">
                                     @if($day)
-                                        @php
-                                            $dayKey = "{$monthData['monthIndex']}-{$day}";
-                                            $isSelected = in_array($dayKey, $selectedDays);
-                                            $isSaved = in_array($dayKey, $savedDays);
-                                            $reservedBy = $reservedDays[$dayKey] ?? null;
-                                        @endphp
+                                    @php
+    $dayKey = "{$monthData['monthIndex']}-{$day}";
+    $isSelected = in_array($dayKey, $selectedDays);
+    $isSaved = in_array($dayKey, $savedDays);
+    $reservedBy = $reservedDays[$dayKey] ?? null;
+    $isHoliday = $showHolidays && $this->isHoliday($monthData['monthIndex'], $day);
+@endphp
 
-                                        <button
-                                            wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
-                                            type="button"
-                                            class="day-wrapper
-                                                {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
-                                                {{ $isSelected ? 'selected' : '' }}
-                                                {{ !$reservedBy ? 'free' : '' }}"
-                                            aria-pressed="{{ $isSelected ? 'true' : 'false' }}"
-                                            aria-label="Dia {{ $day }} de {{ $monthData['name'] }} {{ $reservedBy ? ' - reservado' : ' - disponível para seleção' }}"
-                                        >
-                                            {{ $day }}
+<button
+    wire:click="selectDay({{ $day }}, {{ $monthData['monthIndex'] }})"
+    type="button"
+    class="day-wrapper
+        {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
+        {{ $isSelected ? 'selected' : '' }}
+        {{ !$reservedBy && !$isHoliday ? 'free' : '' }}"
+    x-data="{ showHolidays: @entangle('showHolidays'), isFeb5: {{ $monthData['monthIndex'] === 2 && $day === 5 ? 'true' : 'false' }} }"
+    x-bind:style="(isFeb5 && showHolidays) ? 'background-color: #3b82f6; color: white;' : ''"
+    aria-pressed="{{ $isSelected ? 'true' : 'false' }}"
+    aria-label="Dia {{ $day }} de {{ $monthData['name'] }} {{ $reservedBy ? ' - reservado' : ' - disponível para seleção' }}"
+>
+    {{ $day }}
 
-                                            @if($reservedBy)
-                                                <div class="tooltip" role="tooltip" aria-hidden="true">
-                                                    {{ implode(', ', $reservedBy) }}
-                                                </div>
-                                            @endif
-                                        </button>
-                                    @else
-                                        <span aria-hidden="true">&nbsp;</span>
-                                    @endif
+    @if($reservedBy)
+        <div class="tooltip" role="tooltip" aria-hidden="true">
+            {{ implode(', ', $reservedBy) }}
+        </div>
+    @endif
+</button>
+
+@else
+    <span aria-hidden="true">&nbsp;</span>
+@endif
                                 </div>
                             @endforeach
                         </div>
@@ -91,6 +121,25 @@
                 &#8594;
             </button>
         </div>
+
+        <!-- Checkbox: Mostrar feriados -->
+        <!-- Checkbox: Mostrar feriados -->
+<div 
+class="flex items-center justify-center mt-4"
+x-data="{ showHolidays: @entangle('showHolidays') }"
+>
+<input
+    type="checkbox"
+    id="toggleHolidays"
+    x-model="showHolidays"
+    class="h-4 w-4 text-orange-600 bg-gray-700 border-gray-600 rounded
+           focus:ring-2 focus:ring-orange-500 mr-2"
+>
+<label for="toggleHolidays" class="text-white select-none cursor-pointer">
+    mostrar feriados
+</label>
+</div>
+
 
         <div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
             @if (session()->has('message'))
@@ -133,11 +182,11 @@
                     </button>
             
                     <button 
-    wire:click="sendVacationRequestAndNotify" 
-    class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
-    {{ $remainingDays !== 0 ? 'disabled' : '' }}>
-    Enviar pedido de férias
-</button>
+                        wire:click="sendVacationRequestAndNotify" 
+                        class="vacation-button {{ $remainingDays === 0 ? 'active' : 'inactive' }}" 
+                        {{ $remainingDays !== 0 ? 'disabled' : '' }}>
+                        Enviar pedido de férias
+                    </button>
 
                 </div>
             
@@ -145,22 +194,19 @@
                 @if($activeFilter === 'my' && count($savedDays) > 0)
                     <div>
                         <button 
-                        wire:click="deleteUserVacationDays"
-                        onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
-                        class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
-                    >
-                        Deletar do BD os dias de férias do usuário logado
-                    </button>
-
+                            wire:click="deleteUserVacationDays"
+                            onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
+                            class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+                        >
+                            Deletar do BD os dias de férias do usuário logado
+                        </button>
                     </div>
-                    @endif
+                @endif
             
             </div>
             
         @else
-            {{-- <div class="text-center text-white font-bold mt-3 text-lg">
-                
-            </div> --}}
+            {{-- Aqui você pode colocar uma mensagem pós envio --}}
         @endif
 
     </div>
@@ -200,8 +246,6 @@
         </div>
     </div>
 </div>
-
-
 
     {{-- Container fixo da legenda, abaixo dos ícones --}}
     <div style="
@@ -247,6 +291,5 @@
             </div>
         </div>
     </div>
-    
-    
+
 </div>

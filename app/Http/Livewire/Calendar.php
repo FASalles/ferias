@@ -21,6 +21,17 @@ class Calendar extends Component
 
     public $vacationRequestSent = false;
 
+    public $showSearch = false;
+    public $query = '';
+    public $searchResults = [];
+
+    public bool $showHolidays = false;
+
+    private array $holidays = [
+        '0-1', // 1º de janeiro (mês 0 = janeiro, dia 1)
+        // Adicione mais feriados no formato "mêsIndex-dia"
+    ];
+
     public function mount()
     {
         if (!auth()->check()) {
@@ -41,7 +52,7 @@ class Calendar extends Component
     public function setFilter($filter)
     {
         if ($this->activeFilter === $filter) {
-            $this->activeFilter = null; // desativa o filtro se clicar de novo
+            $this->activeFilter = null;
         } else {
             $this->activeFilter = $filter;
         }
@@ -68,18 +79,71 @@ class Calendar extends Component
 
         VacationRequest::where('user_id', $userId)->delete();
 
-        // Atualizar visualmente
         $this->selectedDays = [];
         $this->vacationRequestSent = false;
         $this->loadUserVacations();
-
-        // Recalcular os dias restantes
         $this->remainingDays = 5;
 
         session()->flash('message', 'Todos os dias de férias foram deletados com sucesso.');
         session()->flash('type', 'success');
     }
 
+    public function toggleSearch()
+    {
+        $this->showSearch = !$this->showSearch;
+        if (!$this->showSearch) {
+            $this->query = '';
+            $this->searchResults = [];
+        }
+    }
+
+    public function updatedQuery()
+    {
+        if (strlen($this->query) > 2) {
+            $this->searchResults = User::where('name', 'like', '%' . $this->query . '%')
+                ->limit(10)
+                ->get()
+                ->toArray();
+        } else {
+            $this->searchResults = [];
+        }
+    }
+
+    public function toggleHolidays()
+    {
+        $this->showHolidays = !$this->showHolidays;
+    }
+
+    /**
+     * Verifica se o dia informado é feriado (só se $showHolidays for true).
+     * @param int $monthIndex (0-11)
+     * @param int $day (1-31)
+     * @return bool
+     */
+    public function isHoliday(int $monthIndex, int $day): bool
+    {
+        if (!$this->showHolidays) {
+            return false;
+        }
+        $key = "{$monthIndex}-{$day}";
+        return in_array($key, $this->holidays);
+    }
+
+    public function updatedShowHolidays($value)
+{
+    if ($value) {
+        if (!in_array('2-5', $this->selectedDays)) {
+            $this->selectedDays[] = '2-5';
+        }
+    } else {
+        $this->selectedDays = array_filter($this->selectedDays, fn($day) => $day !== '2-5');
+    }
+
+    // Força o Livewire a detectar a mudança no array
+    $this->selectedDays = array_values($this->selectedDays);
+}
+
+    
     public function render()
     {
         $months = [
@@ -108,7 +172,6 @@ class Calendar extends Component
 
         switch ($this->activeFilter) {
             case 'all':
-                // mostra todas as férias (sem filtro por time)
                 break;
             case 'disi':
                 $reservedDaysQuery->where('team', 'DISI');
@@ -120,14 +183,12 @@ class Calendar extends Component
                 $reservedDaysQuery->where('user_id', auth()->id());
                 break;
             default:
-                // Nenhum filtro ativo, não mostra férias
-                $reservedDaysQuery->whereRaw('0 = 1'); // consulta vazia
+                $reservedDaysQuery->whereRaw('0 = 1');
                 break;
         }
 
         $reservedDaysRaw = $reservedDaysQuery->get();
 
-        // Construir array chave: "monthIndex-day" => array de nomes que reservaram o dia
         $reservedDays = [];
 
         foreach ($reservedDaysRaw as $request) {
@@ -150,6 +211,14 @@ class Calendar extends Component
             'remainingDays' => $this->remainingDays,
             'vacationRequestSent' => $this->vacationRequestSent,
             'activeFilter' => $this->activeFilter,
+            'showSearch' => $this->showSearch,
+            'query' => $this->query,
+            'searchResults' => $this->searchResults,
+            'holidays' => $this->showHolidays ? $this->holidays : [],
+            'showHolidays' => $this->showHolidays,
+            'isHolidayCallback' => function($monthIndex, $day) {
+                return $this->isHoliday($monthIndex, $day);
+            },
         ])->layout('layouts.app');
     }
 
@@ -217,7 +286,6 @@ class Calendar extends Component
 
         $userId = auth()->id();
 
-        // Buscar dias já reservados
         $existingDaysCount = VacationRequest::where('user_id', $userId)
             ->whereIn('status', ['pending', 'approved'])
             ->get()
@@ -272,12 +340,10 @@ class Calendar extends Component
         }
     }
 
-    // Método que junta enviar pedido + notificar admins
     public function sendVacationRequestAndNotify()
     {
         $this->sendVacationRequest();
 
-        // Só notifica se o pedido foi enviado com sucesso
         if ($this->vacationRequestSent) {
             $this->notificarAdmins();
         }
