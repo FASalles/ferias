@@ -17,6 +17,8 @@ class Calendar extends Component
     public $remainingDays = 5;
     public $savedDays = [];
 
+    public bool $userHasVacation = false;
+
     public $users = [];   // Array para armazenar os usuários do banco
     public $selectedUser = ''; // Para armazenar o usuário selecionado
 
@@ -29,6 +31,13 @@ class Calendar extends Component
     public $searchResults = [];
 
     public bool $showHolidays = false;
+
+    private function checkUserHasVacation()
+{
+    $this->userHasVacation = VacationRequest::where('user_id', auth()->id())
+        ->whereIn('status', ['pending', 'approved'])
+        ->exists();
+}
 
     private array $holidays = [
         // Janeiro
@@ -86,7 +95,15 @@ class Calendar extends Component
     $this->clearSelectedDays(); // limpa todos os dias no estado inicial
 
     $this->users = User::orderBy('name')->get(['id', 'name'])->toArray();
+
+    $this->checkUserHasVacation();
+
+    if ($this->userHasVacation) {
+        session()->flash('message', 'As suas férias já estão marcadas.');
+        session()->flash('type', 'primary'); // azul, para informação
+    }
 }
+
 
 
     public function updatedSelectedUser($userId)
@@ -196,6 +213,8 @@ class Calendar extends Component
         ->toArray();
 
     $this->selectedDays = $this->savedDays;
+
+    $this->userHasVacation = count($this->savedDays) > 0;
 }
 
 
@@ -208,6 +227,7 @@ class Calendar extends Component
         $this->selectedDays = [];
         $this->vacationRequestSent = false;
         $this->loadUserVacations();
+        $this->checkUserHasVacation(); // ← adicione isso
         $this->remainingDays = 5;
 
         session()->flash('message', 'Todos os dias de férias foram deletados com sucesso.');

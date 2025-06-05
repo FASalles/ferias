@@ -126,6 +126,10 @@
             </button>
         </div>
 
+        @if ($userHasVacation)
+@endif
+
+
         
         <!-- Checkbox: Mostrar feriados -->
         <div 
@@ -146,28 +150,48 @@
 
 
 
-        <div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
-            @if (session()->has('message'))
-                @php
-                    $isWarning = session('type') === 'warning';
-                    $bgColor = $isWarning ? '#facc15' : '#22c55e';
-                    $textColor = $isWarning ? '#000' : '#fff';
-                @endphp
+<div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
+    @if (session()->has('message'))
+        @php
+            $type = session('type', 'success');
+            switch ($type) {
+                case 'warning':
+                    $bgColor = '#facc15'; // amarelo
+                    $textColor = '#000';
+                    break;
+                case 'primary':
+                    $bgColor = '#3b82f6'; // azul
+                    $textColor = '#fff';
+                    break;
+                case 'error':
+                    $bgColor = '#ef4444'; // vermelho
+                    $textColor = '#fff';
+                    break;
+                case 'info':
+                    $bgColor = '#0ea5e9'; // azul claro
+                    $textColor = '#fff';
+                    break;
+                default:
+                    $bgColor = '#22c55e'; // verde (success)
+                    $textColor = '#fff';
+                    break;
+            }
+        @endphp
 
-                <div style="
-                    background-color: {{ $bgColor }};
-                    color: {{ $textColor }};
-                    padding: 16px 24px;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    text-align: center;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                    transition: opacity 0.3s ease;
-                ">
-                    {{ session('message') }}
-                </div>
-            @endif
+        <div style="
+            background-color: {{ $bgColor }};
+            color: {{ $textColor }};
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease;
+        ">
+            {{ session('message') }}
         </div>
+    @endif
+</div>
 
         @if (!$vacationRequestSent)
             <div class="text-center text-white font-semibold">
