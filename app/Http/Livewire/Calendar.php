@@ -17,7 +17,10 @@ class Calendar extends Component
     public $remainingDays = 5;
     public $savedDays = [];
 
-    public $activeFilter = null; // 'all', 'disi', 'pe', 'my' ou null
+    public $users = [];   // Array para armazenar os usuários do banco
+    public $selectedUser = ''; // Para armazenar o usuário selecionado
+
+    public $activeFilter = null;
 
     public $vacationRequestSent = false;
 
@@ -28,8 +31,50 @@ class Calendar extends Component
     public bool $showHolidays = false;
 
     private array $holidays = [
-        '0-1', // 1º de janeiro (mês 0 = janeiro, dia 1)
-        // Adicione mais feriados no formato "mêsIndex-dia"
+        // Janeiro
+        '0-1',  // Confraternização Universal
+        '0-20', // Dia de São Sebastião (RJ)
+
+        // Fevereiro
+        '1-3',  // Carnaval (segunda-feira)
+        '1-4',  // Carnaval (terça-feira)
+        '1-5',  // Quarta-feira de cinzas (ponto facultativo até 14h)
+
+        // Março
+        // Nenhum
+
+        // Abril
+        '3-18', // Paixão de Cristo (sexta-feira santa)
+        '3-21', // Tiradentes
+
+        // Maio
+        '4-1',  // Dia do Trabalho
+
+        // Junho
+        '5-19', // Corpus Christi (ponto facultativo)
+
+        // Julho
+        // Nenhum
+
+        // Agosto
+        // Nenhum
+
+        // Setembro
+        '8-7',  // Independência do Brasil
+
+        // Outubro
+        '9-12', // Nossa Senhora Aparecida
+        '9-28', // São Judas Tadeu (RJ)
+
+        // Novembro
+        '10-2',  // Finados
+        '10-15', // Proclamação da República
+        '10-20', // Dia da Consciência Negra (RJ)
+
+        // Dezembro
+        '11-24', // Véspera de Natal (ponto facultativo após 14h)
+        '11-25', // Natal
+        '11-31', // Véspera de Ano Novo (ponto facultativo após 14h)
     ];
 
     public function mount()
@@ -40,6 +85,74 @@ class Calendar extends Component
 
         $this->loadUserVacations();
         $this->remainingDays = max(5 - count($this->savedDays), 0);
+        $this->users = User::orderBy('name')->get(['id', 'name'])->toArray();
+    }
+
+    public function updatedSelectedUser($userId)
+    {
+        if ($userId) {
+            $this->filterByUser($userId);
+        } else {
+            $this->setFilter('all'); // mostra todas as férias
+        }
+    }
+
+    public function filterByUser($userId)
+    {
+        $this->activeFilter = 'user';  // filtro por usuário customizado
+
+        $vacations = VacationRequest::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->get();
+
+        $this->savedDays = $vacations
+            ->flatMap(fn($vacation) => json_decode($vacation->days, true) ?: [])
+            ->toArray();
+
+        $this->selectedDays = $this->savedDays;
+
+        $this->remainingDays = max(5 - count($this->savedDays), 0);
+    }
+
+    private function loadAllVacations()
+    {
+        $vacations = VacationRequest::whereIn('status', ['pending', 'approved'])->get();
+
+        $this->savedDays = $vacations
+            ->flatMap(fn($vacation) => json_decode($vacation->days, true) ?: [])
+            ->unique()
+            ->toArray();
+
+        $this->selectedDays = $this->savedDays;
+
+        $this->remainingDays = 0;  // como é todas, não pode selecionar mais dias
+    }
+
+    public function updatedShowHolidays($value)
+    {
+        if ($value) {
+            foreach ($this->holidays as $dia) {
+                if (!in_array($dia, $this->selectedDays)) {
+                    $this->selectedDays[] = $dia;
+                }
+            }
+        } else {
+            $this->selectedDays = array_filter(
+                $this->selectedDays,
+                fn($day) => !in_array($day, $this->holidays)
+            );
+        }
+
+        $this->selectedDays = array_values($this->selectedDays);
+    }
+
+    public function isHoliday(int $monthIndex, int $day): bool
+    {
+        if (!$this->showHolidays) {
+            return false;
+        }
+        $key = "{$monthIndex}-{$day}";
+        return in_array($key, $this->holidays);
     }
 
     public function clearSelectedDays()
@@ -53,22 +166,28 @@ class Calendar extends Component
     {
         if ($this->activeFilter === $filter) {
             $this->activeFilter = null;
+            $this->clearSelectedDays();
         } else {
             $this->activeFilter = $filter;
-        }
 
-        if ($this->activeFilter === 'my') {
-            $this->loadUserVacations();
-            $this->remainingDays = max(5 - count($this->savedDays), 0);
+            if ($this->activeFilter === 'my') {
+                $this->loadUserVacations();
+                $this->remainingDays = max(5 - count($this->savedDays), 0);
+            }
+
+            if ($this->activeFilter === 'all') {
+                $this->loadAllVacations();
+            }
         }
     }
 
     private function loadUserVacations()
     {
         $this->savedDays = VacationRequest::where('user_id', auth()->id())
+            ->whereIn('status', ['pending', 'approved'])
             ->get()
             ->flatMap(function ($vacation) {
-                return json_decode($vacation->days, true);
+                return json_decode($vacation->days, true) ?: [];
             })
             ->toArray();
     }
@@ -114,44 +233,6 @@ class Calendar extends Component
         $this->showHolidays = !$this->showHolidays;
     }
 
-    /**
-     * Verifica se o dia informado é feriado (só se $showHolidays for true).
-     * @param int $monthIndex (0-11)
-     * @param int $day (1-31)
-     * @return bool
-     */
-    public function isHoliday(int $monthIndex, int $day): bool
-    {
-        if (!$this->showHolidays) {
-            return false;
-        }
-        $key = "{$monthIndex}-{$day}";
-        return in_array($key, $this->holidays);
-    }
-
-    public function updatedShowHolidays($value)
-{
-    $feriados = [];
-
-    if ($value) {
-        foreach ($feriados as $dia) {
-            if (!in_array($dia, $this->selectedDays)) {
-                $this->selectedDays[] = $dia;
-            }
-        }
-    } else {
-        $this->selectedDays = array_filter(
-            $this->selectedDays,
-            fn($day) => !in_array($day, $feriados)
-        );
-    }
-
-    // Força o Livewire a detectar a mudança no array
-    $this->selectedDays = array_values($this->selectedDays);
-}
-
-
-    
     public function render()
     {
         $months = [
@@ -190,6 +271,11 @@ class Calendar extends Component
             case 'my':
                 $reservedDaysQuery->where('user_id', auth()->id());
                 break;
+            case 'user':
+                if ($this->selectedUser) {
+                    $reservedDaysQuery->where('user_id', $this->selectedUser);
+                }
+                break;
             default:
                 $reservedDaysQuery->whereRaw('0 = 1');
                 break;
@@ -227,6 +313,8 @@ class Calendar extends Component
             'isHolidayCallback' => function($monthIndex, $day) {
                 return $this->isHoliday($monthIndex, $day);
             },
+            'users' => $this->users,
+            'selectedUser' => $this->selectedUser,
         ])->layout('layouts.app');
     }
 
@@ -329,7 +417,6 @@ class Calendar extends Component
 
         $this->loadUserVacations();
     }
-
     public function notificarAdmins()
     {
         $admins = User::whereJsonContains('roles', 'admin')->get();

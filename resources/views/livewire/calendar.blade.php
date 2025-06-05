@@ -23,41 +23,25 @@
                 </button>
             </div>
 
-            <!-- Ícone flutuando à direita -->
-            <div class="flex items-center absolute top-0" style="right: 92px;">
+           <!-- Ícone flutuando à direita -->
+<div class="flex items-center absolute top-0" style="right: 1px;">
 
-                {{-- Seu megaphone --}}
-                <livewire:megaphone />
-            
-                {{-- Lupa que mostra/oculta o campo --}}
-                <button wire:click="toggleSearch" class="ml-3 p-2 hover:bg-gray-200 rounded" type="button" aria-label="Buscar">
-                    🔍
-                </button>
-            
-                {{-- Campo de busca só aparece quando showSearch é true --}}
-                @if($showSearch)
-                    <div class="ml-2 relative">
-                        <input
-                            type="text"
-                            wire:model.debounce.300ms="query"
-                            placeholder="Buscar usuários..."
-                            class="border rounded px-2 py-1"
-                            autofocus
-                        />
-            
-                        @if(!empty($searchResults))
-                            <ul class="absolute bg-white border rounded mt-1 max-h-48 overflow-auto w-full z-50">
-                                @foreach($searchResults as $result)
-                                    <li class="p-2 hover:bg-gray-200 cursor-pointer">
-                                        {{ $result['name'] }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
-                @endif
-            
-            </div>
+    
+
+    <div class="ml-3 relative">
+        <select wire:model="selectedUser" class="border rounded px-3 py-1 bg-white text-black">
+            <option value="">Selecionar usuário</option>
+            @foreach($users as $user)
+                <option value="{{ $user['id'] }}">{{ $user['name'] }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Seu megaphone --}}
+    <livewire:megaphone />
+    
+
+</div>
         </div>
 
         <div class="flex items-center justify-between mb-3">
@@ -95,47 +79,22 @@
         {{ !$reservedBy && !$isHoliday ? 'free' : '' }}"
     x-data="{
         showHolidays: @entangle('showHolidays'),
-
-        // Feriados Nacionais
-        isJan1: {{ $monthData['monthIndex'] === 0 && $day === 1 ? 'true' : 'false' }},
-        isApr18: {{ $monthData['monthIndex'] === 3 && $day === 18 ? 'true' : 'false' }},
-        isApr21: {{ $monthData['monthIndex'] === 3 && $day === 21 ? 'true' : 'false' }},
-        isMay1: {{ $monthData['monthIndex'] === 4 && $day === 1 ? 'true' : 'false' }},
-        isSep7: {{ $monthData['monthIndex'] === 8 && $day === 7 ? 'true' : 'false' }},
-        isOct12: {{ $monthData['monthIndex'] === 9 && $day === 12 ? 'true' : 'false' }},
-        isNov2: {{ $monthData['monthIndex'] === 10 && $day === 2 ? 'true' : 'false' }},
-        isNov15: {{ $monthData['monthIndex'] === 10 && $day === 15 ? 'true' : 'false' }},
-        isDec25: {{ $monthData['monthIndex'] === 11 && $day === 25 ? 'true' : 'false' }},
-
-        // Feriados Municipais (Rio de Janeiro)
-        isJan20: {{ $monthData['monthIndex'] === 0 && $day === 20 ? 'true' : 'false' }},
-        isMar1: {{ $monthData['monthIndex'] === 2 && $day === 1 ? 'true' : 'false' }},
-
-        // Feriados Estaduais (Rio de Janeiro)
-        isMar4: {{ $monthData['monthIndex'] === 2 && $day === 4 ? 'true' : 'false' }},
-        isApr23: {{ $monthData['monthIndex'] === 3 && $day === 23 ? 'true' : 'false' }},
-        isNov20: {{ $monthData['monthIndex'] === 10 && $day === 20 ? 'true' : 'false' }},
-
-        // Pontos Facultativos
-        isMar3: {{ $monthData['monthIndex'] === 2 && $day === 3 ? 'true' : 'false' }},
-        isMar5: {{ $monthData['monthIndex'] === 2 && $day === 5 ? 'true' : 'false' }},
-        isJun19: {{ $monthData['monthIndex'] === 5 && $day === 19 ? 'true' : 'false' }},
-        isJun20: {{ $monthData['monthIndex'] === 5 && $day === 20 ? 'true' : 'false' }},
-        isOct28: {{ $monthData['monthIndex'] === 9 && $day === 28 ? 'true' : 'false' }},
-        isDec24: {{ $monthData['monthIndex'] === 11 && $day === 24 ? 'true' : 'false' }},
-        isDec31: {{ $monthData['monthIndex'] === 11 && $day === 31 ? 'true' : 'false' }},
-
-        // Feriados extras anteriores
-        isFeb5: {{ $monthData['monthIndex'] === 1 && $day === 5 ? 'true' : 'false' }},
-        isFeb10: {{ $monthData['monthIndex'] === 1 && $day === 10 ? 'true' : 'false' }},
+        isHoliday: false,
+        init() {
+            const m = {{ $monthData['monthIndex'] }};
+            const d = {{ $day }};
+            const holidays = [
+                '0-1', '3-18', '3-21', '4-1', '8-7', '9-12', '10-2', '10-15', '11-25',
+                '0-20', '2-1',
+                '2-4', '3-23', '10-20',
+                '2-3', '2-5', '5-19', '5-20', '9-28', '11-24', '11-31',
+                '1-5', '1-10'
+            ];
+            this.isHoliday = holidays.includes(`${m}-${d}`);
+        }
     }"
-    x-bind:style="showHolidays && (
-        isJan1 || isApr18 || isApr21 || isMay1 || isSep7 || isOct12 || isNov2 || isNov15 || isDec25 ||
-        isJan20 || isMar1 ||
-        isMar4 || isApr23 || isNov20 ||
-        isMar3 || isMar5 || isJun19 || isJun20 || isOct28 || isDec24 || isDec31 ||
-        isFeb5 || isFeb10
-    ) ? 'background-color: #3b82f6; color: white;' : ''"
+    x-init="init()"
+    x-bind:style="showHolidays && isHoliday ? 'background-color: #3b82f6; color: white;' : ''"
     aria-pressed="{{ $isSelected ? 'true' : 'false' }}"
     aria-label="Dia {{ $day }} de {{ $monthData['name'] }} {{ $reservedBy ? ' - reservado' : ' - disponível para seleção' }}"
 >
@@ -147,6 +106,7 @@
         </div>
     @endif
 </button>
+
 
 
 
@@ -166,23 +126,24 @@
             </button>
         </div>
 
+        
         <!-- Checkbox: Mostrar feriados -->
-        <!-- Checkbox: Mostrar feriados -->
-<div 
-class="flex items-center justify-center mt-4"
-x-data="{ showHolidays: @entangle('showHolidays') }"
+        <div 
+    class="flex items-center justify-center mt-4 gap-2"
+    x-data="{ showHolidays: @entangle('showHolidays') }"
 >
-<input
-    type="checkbox"
-    id="toggleHolidays"
-    x-model="showHolidays"
-    class="h-4 w-4 text-orange-600 bg-gray-700 border-gray-600 rounded
-           focus:ring-2 focus:ring-orange-500 mr-2"
->
-<label for="toggleHolidays" class="text-white select-none cursor-pointer">
-    mostrar feriados
-</label>
+    <input
+        type="checkbox"
+        id="toggleHolidays"
+        x-model="showHolidays"
+        class="h-4 w-4 text-orange-600 bg-gray-700 border-gray-600 rounded
+            focus:ring-2 focus:ring-orange-500"
+    >
+    <label for="toggleHolidays" class="text-white select-none cursor-pointer">
+        mostrar feriados
+    </label>
 </div>
+
 
 
         <div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
@@ -260,7 +221,7 @@ x-data="{ showHolidays: @entangle('showHolidays') }"
     class="fixed z-[1000] flex flex-row items-center gap-4"
     style="
         right: 80px;
-        bottom: 200px;
+        bottom: 350px;
         background-color: rgba(31, 41, 55, 0.9);
         padding: 16px;
         border-radius: 12px;
@@ -294,7 +255,7 @@ x-data="{ showHolidays: @entangle('showHolidays') }"
     {{-- Container fixo da legenda, abaixo dos ícones --}}
     <div style="
         position: fixed;
-        bottom: 20px;
+        bottom: 120px;
         right: 20px;
         background: rgba(31, 41, 55, 0.9);
         padding: 12px 20px;
@@ -306,6 +267,14 @@ x-data="{ showHolidays: @entangle('showHolidays') }"
         min-width: 220px;
         z-index: 1000;
         ">
+        <div class="legend-item" tabindex="0" aria-describedby="tooltip-feriado">
+            <span class="legend-dot" style="background-color: #3b82f6;"></span>
+            <span>Feriados</span>
+            <div role="tooltip" id="tooltip-feriado" class="tooltip-legend">
+                Dias de feriado nacional, estadual<br> ou municipal.
+            </div>
+        </div>
+        
         <div class="legend-item" tabindex="0" aria-describedby="tooltip-naoclicado">
             <span class="legend-dot" style="background-color: #6b7280;"></span>
             <span>Dia Não Clicado</span>
