@@ -1,272 +1,282 @@
 /* Background e layout */
 .bg-gray-900 {
-    background-color: #1f2937;
-  }
-  .min-h-screen {
-    min-height: 100vh;
-  }
-  .flex {
-    display: flex;
-  }
-  .items-start {
-    align-items: flex-start;
-  }
-  .justify-center {
-    justify-content: center;
-  }
-  .px-4 {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  .sm\:px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-  .lg\:px-8 {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-  .w-full {
-    width: 100%;
-  }
-  .max-w-7xl {
-    max-width: 80rem; /* 1280px */
-  }
-  .space-y-6 > * + * {
-    margin-top: 1.5rem;
-  }
-  .text-3xl {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
-  }
-  .font-bold {
-    font-weight: 700;
-  }
-  .text-white {
-    color: white;
-  }
-  .text-center {
-    text-align: center;
-  }
-  .mt-3 {
-    margin-top: 0.75rem;
-  }
-  
-  /* Botões de filtro */
-  .vacation-button {
-    padding: 12px 24px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    background-color: #6b7280;
-    color: black;
-  }
-  .vacation-button.active {
-    background-color: #22c55e;
-    color: white;
-  }
-  .vacation-button.inactive {
-    background-color: #6b7280;
-    color: black;
-  }
-  .vacation-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  .vacation-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  
-  /* Dias no calendário */
-  .day-wrapper {
-    position: relative;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 9999px;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    border: none;
-  }
-  .day-wrapper.selected {
-    background-color: #22c55e;
-    color: white;
-  }
-  .day-wrapper.free:hover {
-    background-color: #f97316;
-    color: white;
-  }
-  .day-wrapper.saved {
-    background-color: #facc15 !important;
-    color: black;
-    cursor: default;
-  }
-  .day-wrapper.occupied {
-    background-color: #ef4444 !important;
-    color: white !important;
-    cursor: default;
-  }
-  
-  /* Tooltip */
-  .tooltip {
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(31, 41, 55, 0.95);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    z-index: 50;
-    user-select: none;
-  }
-  .day-wrapper:hover .tooltip,
-  .day-wrapper:focus .tooltip {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  /* Legenda */
-  .legend-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-    cursor: default;
-    outline: none;
-  }
-  .legend-dot {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .vacation-day {
-    background-color: #10b981; /* verde claro, por exemplo */
-    color: white;
-    font-weight: bold;
+  background-color: #1f2937;
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+.flex {
+  display: flex;
+}
+.items-start {
+  align-items: flex-start;
+}
+.justify-center {
+  justify-content: center;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.sm\:px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.lg\:px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+.w-full {
+  width: 100%;
+}
+.max-w-7xl {
+  max-width: 80rem; /* 1280px */
+}
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.text-white {
+  color: white;
+}
+.text-center {
+  text-align: center;
+}
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+/* Botões de filtro */
+.vacation-button {
+  padding: 12px 24px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  background-color: #6b7280;
+  color: black;
+}
+.vacation-button.active {
+  background-color: #22c55e;
+  color: white;
+}
+.vacation-button.inactive {
+  background-color: #6b7280;
+  color: black;
+}
+.vacation-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.vacation-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Dias no calendário */
+.day-wrapper,
+.day-wrapper.selected,
+.day-wrapper.free:hover,
+.day-wrapper.saved,
+.day-wrapper.occupied,
+.day-wrapper.vacation-day,
+.day-wrapper.user-vacation-day,
+.day-wrapper.highlighted {
+  position: relative;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important; /* círculo perfeito */
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: none;
+}
+
+.day-wrapper.selected {
+  background-color: #22c55e;
+  color: white;
+}
+
+.day-wrapper.free:hover {
+  background-color: #f97316;
+  color: white;
+}
+
+.day-wrapper.saved {
+  background-color: #facc15 !important;
+  color: black;
+  cursor: default;
+}
+
+.day-wrapper.occupied {
+  background-color: #ef4444 !important;
+  color: white !important;
+  cursor: default;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(31, 41, 55, 0.95);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 50;
+  user-select: none;
+}
+.day-wrapper:hover .tooltip,
+.day-wrapper:focus .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Legenda */
+.legend-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  cursor: default;
+  outline: none;
+}
+.legend-dot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vacation-day {
+  background-color: #10b981; /* verde claro, por exemplo */
+  color: white;
+  font-weight: bold;
 }
 .user-vacation-day {
   background-color: #22c55e; /* Verde (exemplo) */
   color: white;
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: 50%;
   box-shadow: 0 0 5px #16a34a;
 }
-  .tooltip-legend {
-    position: absolute;
-    bottom: 150%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(31, 41, 55, 0.95);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    user-select: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 1001;
-    width: max-content;
-    max-width: 240px;
-  }
-  .legend-item:hover .tooltip-legend,
-  .legend-item:focus-within .tooltip-legend {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  /* Megaphone banner */
-  [data-megaphone-banner],
-  .megaphone-banner,
-  [class*="megaphone"] {
-    display: flex;
-    margin-left: auto;
-  }
-  [data-megaphone-banner] svg,
-  .megaphone-banner svg,
-  [class*="megaphone"] svg {
-    width: 50px !important;
-    height: 50px !important;
-    max-width: unset !important;
-    max-height: unset !important;
-    color: #D4AF37;
-    fill: #D4AF37;
-  }
-  
-  /* Botões fixos PDF, email, Excel */
-  .fixed.z-\[1000\] {
-    position: fixed;
-    z-index: 1000;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-    right: 80px;
-    bottom: 200px;
-    background-color: rgba(31, 41, 55, 0.9);
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    color: white;
-    width: auto;
-  }
-  
-  /* Tooltip ícones fixos */
-  .relative.group .absolute {
-    position: absolute;
-    bottom: -2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #374151;
-    color: white;
-    font-size: 0.75rem;
-    border-radius: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-    white-space: nowrap;
-    z-index: 50;
-  }
-  .relative.group:hover .absolute {
-    opacity: 1;
-    pointer-events: auto;
-    transition-duration: 0s;
-  }
-  
-  /* Container fixo da legenda */
-  .legend-container-fixed {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(31, 41, 55, 0.9);
-    padding: 12px 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    color: white;
-    font-weight: 600;
-    font-size: 14px;
-    min-width: 220px;
-    z-index: 1000;
-  }
-  
+.tooltip-legend {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(31, 41, 55, 0.95);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 1001;
+  width: max-content;
+  max-width: 240px;
+}
+.legend-item:hover .tooltip-legend,
+.legend-item:focus-within .tooltip-legend {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Megaphone banner */
+[data-megaphone-banner],
+.megaphone-banner,
+[class*="megaphone"] {
+  display: flex;
+  margin-left: auto;
+}
+[data-megaphone-banner] svg,
+.megaphone-banner svg,
+[class*="megaphone"] svg {
+  width: 50px !important;
+  height: 50px !important;
+  max-width: unset !important;
+  max-height: unset !important;
+  color: #D4AF37;
+  fill: #D4AF37;
+}
+
+/* Botões fixos PDF, email, Excel */
+.fixed.z-\[1000\] {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  right: 80px;
+  bottom: 200px;
+  background-color: rgba(31, 41, 55, 0.9);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  color: white;
+  width: auto;
+}
+
+/* Tooltip ícones fixos */
+.relative.group .absolute {
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #374151;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  z-index: 50;
+}
+.relative.group:hover .absolute {
+  opacity: 1;
+  pointer-events: auto;
+  transition-duration: 0s;
+}
+
+/* Container fixo da legenda */
+.legend-container-fixed {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(31, 41, 55, 0.9);
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 220px;
+  z-index: 1000;
+}

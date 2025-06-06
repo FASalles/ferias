@@ -21,16 +21,22 @@
         
             <!-- Ícones flutuando à direita -->
             <div class="flex items-center gap-x-4 absolute top-0" style="right: 1px;">
-                <div class="ml-3 relative w-24">
-                    <!-- Select com emoji dentro das opções -->
+                <div class="ml-3 relative inline-block">
+                    <!-- Cabeça pequena -->
                     <select wire:model="selectedUser"
-                        class="appearance-none bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full pl-2 pr-8 py-2 relative z-20">
-                        <option value="">👤</option> <!-- emoji aqui -->
+    style="width: 5rem;" 
+    class="bg-gray-800 border border-gray-600 text-white text-sm rounded-md focus:ring-orange-500 focus:border-orange-500 pl-2 pr-2 py-1 text-center leading-tight">
+                        <option value="">👤</option>
                         @foreach ($users as $user)
                             <option value="{{ $user['id'] }}">{{ $user['name'] }}</option>
                         @endforeach
                     </select>
                 </div>
+                
+                
+                
+                
+                
                 
                 <livewire:megaphone />
             </div>
