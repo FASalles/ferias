@@ -86,6 +86,8 @@ class Calendar extends Component
         '11-31', // Véspera de Ano Novo (ponto facultativo após 14h)
     ];
 
+    
+    
     public function mount()
 {
     if (!auth()->check()) {
@@ -99,8 +101,8 @@ class Calendar extends Component
     $this->checkUserHasVacation();
 
     if ($this->userHasVacation) {
-        session()->flash('message', 'As suas férias já estão marcadas.');
-        session()->flash('type', 'primary'); // azul, para informação
+        session()->flash('message', 'As suas férias já estão marcadas');
+        session()->flash('type', 'info'); // azul, para informação
     }
 }
 
@@ -230,7 +232,7 @@ class Calendar extends Component
         $this->checkUserHasVacation(); // ← adicione isso
         $this->remainingDays = 5;
 
-        session()->flash('message', 'Todos os dias de férias foram deletados com sucesso.');
+        session()->flash('message', 'Todos os dias de férias foram deletados com sucesso');
         session()->flash('type', 'success');
     }
 
@@ -372,32 +374,57 @@ class Calendar extends Component
     }
 
     public function selectDay($day, $monthIndex)
-    {
-        $key = "{$monthIndex}-{$day}";
+{
+    $key = "{$monthIndex}-{$day}";
 
-        if (in_array($key, $this->savedDays)) {
-            return;
-        }
+    if (in_array($key, $this->savedDays)) {
+        return;
+    }
 
-        if (in_array($key, $this->selectedDays)) {
-            $this->selectedDays = array_values(array_diff($this->selectedDays, [$key]));
-            $this->remainingDays++;
-        } else {
-            if (count($this->selectedDays) >= 5) {
-                session()->flash('message', 'Você não pode selecionar mais de 5 dias de férias.');
-                session()->flash('type', 'warning');
-                return;
-            }
+    // Se já está selecionado, desmarcar
+    if (in_array($key, $this->selectedDays)) {
+        $this->selectedDays = array_values(array_diff($this->selectedDays, [$key]));
+        $this->remainingDays++;
+        return;
+    }
 
-            $this->selectedDays[] = $key;
-            $this->remainingDays--;
-        }
+    if (count($this->selectedDays) >= 5) {
+        session()->flash('message', 'Você não pode selecionar mais de 5 dias de férias.');
+        session()->flash('type', 'warning');
+        return;
+    }
 
-        if (count($this->selectedDays) > 5) {
-            $this->selectedDays = array_slice($this->selectedDays, 0, 5);
-            $this->remainingDays = 0;
+    $tempSelected = array_merge($this->selectedDays, [$key]);
+    $tempSelected = array_unique($tempSelected);
+
+    // Validar se os dias são contíguos
+    if (!$this->areDaysContiguous($tempSelected)) {
+        session()->flash('message', 'Você só pode selecionar dias contíguos de férias.');
+        session()->flash('type', 'warning');
+        return;
+    }
+
+    $this->selectedDays = $tempSelected;
+    $this->remainingDays--;
+}
+
+private function areDaysContiguous(array $days): bool
+{
+    $dates = array_map(function ($key) {
+        [$month, $day] = explode('-', $key);
+        return Carbon::create($this->year, $month + 1, $day)->startOfDay();
+    }, $days);
+
+    usort($dates, fn($a, $b) => $a->lt($b) ? -1 : 1);
+
+    for ($i = 1; $i < count($dates); $i++) {
+        if (!$dates[$i - 1]->copy()->addDay()->equalTo($dates[$i])) {
+            return false;
         }
     }
+
+    return true;
+}
 
     public function sendVacationRequest()
     {

@@ -157,6 +157,18 @@
     border-radius: 50%;
     flex-shrink: 0;
   }
+  .vacation-day {
+    background-color: #10b981; /* verde claro, por exemplo */
+    color: white;
+    font-weight: bold;
+}
+.user-vacation-day {
+  background-color: #22c55e; /* Verde (exemplo) */
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  box-shadow: 0 0 5px #16a34a;
+}
   .tooltip-legend {
     position: absolute;
     bottom: 150%;
