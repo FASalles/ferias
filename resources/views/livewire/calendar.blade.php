@@ -42,7 +42,13 @@
             </div>
         </div>
         
-        
+        @if ($userHasVacation)
+    
+@endif
+
+
+
+
         
         
         
@@ -70,7 +76,8 @@
                                             $isSelected = in_array($dayKey, $selectedDays);
                                             $isSaved = in_array($dayKey, $savedDays);
                                             $isUserVacationDay = in_array($dayKey, $savedDays);
-                                            $reservedBy = $reservedDays[$dayKey] ?? null;
+                                            $reservedBy = $reservedDays[$dayKey] ?? [];
+
                                             $isHoliday = $showHolidays && $this->isHoliday($monthData['monthIndex'], $day);
                                         @endphp
 
@@ -79,11 +86,11 @@
                                             type="button"
                                             @if($userHasVacation) disabled @endif
                                             class="day-wrapper
-                                                {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : ($reservedBy ? 'saved' : '') }}
-                                                {{ $isSelected ? 'selected' : '' }}
-                                                {{ !$reservedBy && !$isHoliday ? 'free' : '' }}
-                                                {{ $isUserVacationDay ? 'user-vacation-day' : '' }}
-                                                {{ $userHasVacation ? 'cursor-not-allowed opacity-50' : '' }}"
+                                            {{ is_array($reservedBy) && count($reservedBy) > 1 ? 'occupied' : '' }}
+                                            {{ is_array($reservedBy) && count($reservedBy) === 1 ? 'saved' : '' }}
+                                            {{ $isSelected ? 'selected' : '' }}
+                                            {{ $isUserVacationDay ? 'user-vacation-day' : '' }}
+                                            {{ $userHasVacation ? 'cursor-not-allowed opacity-50' : '' }}"
                                             x-data="{
                                                 showHolidays: @entangle('showHolidays'),
                                                 isHoliday: false,
@@ -140,89 +147,111 @@
         </div>
 
         <!-- Mensagem -->
-        <div style="min-height: 60px; margin: 14px auto; max-width: 600px;">
-            @if (session()->has('message'))
-                @php
-                    $type = session('type', 'success');
-                    switch ($type) {
-                        case 'warning':
-                            $bgColor = '#facc15';
-                            $textColor = '#000';
-                            break;
-                        case 'primary':
-                            $bgColor = '#3b82f6';
-                            $textColor = '#fff';
-                            break;
-                        case 'error':
-                            $bgColor = '#ef4444';
-                            $textColor = '#fff';
-                            break;
-                        case 'info':
-                            $bgColor = '#0ea5e9';
-                            $textColor = '#fff';
-                            break;
-                        default:
-                            $bgColor = '#22c55e';
-                            $textColor = '#fff';
-                            break;
-                    }
-                @endphp
-                <div style="
-                    background-color: {{ $bgColor }};
-                    color: {{ $textColor }};
-                    padding: 16px 24px;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    text-align: center;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                    transition: opacity 0.3s ease;
-                ">
-                    {{ session('message') }}
+<!-- Mensagem -->
+<div 
+    x-data="{ showMessage: false }" 
+    x-init="setTimeout(() => showMessage = true, 500)" 
+    style="min-height: 60px; margin: 14px auto; max-width: 600px;"
+>
+    @if (session()->has('message'))
+        @php
+            $type = session('type', 'success');
+            switch ($type) {
+                case 'warning':
+                    $bgColor = '#facc15';
+                    $textColor = '#000';
+                    break;
+                case 'primary':
+                    $bgColor = '#3b82f6';
+                    $textColor = '#fff';
+                    break;
+                case 'error':
+                    $bgColor = '#ef4444';
+                    $textColor = '#fff';
+                    break;
+                case 'info':
+                    $bgColor = '#0ea5e9';
+                    $textColor = '#fff';
+                    break;
+                default:
+                    $bgColor = '#22c55e';
+                    $textColor = '#fff';
+                    break;
+            }
+        @endphp
+        <div 
+            x-show="showMessage"
+            x-transition.opacity.duration.700ms
+            style="background-color: {{ $bgColor }};
+                   color: {{ $textColor }};
+                   padding: 16px 24px;
+                   border-radius: 8px;
+                   font-weight: bold;
+                   text-align: center;
+                   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);"
+        >
+            {{ session('message') }}
+        </div>
+    @elseif ($userHasVacation)
+        <div 
+            x-show="showMessage"
+            x-transition.opacity.duration.700ms
+            style="background-color: #1e40af;
+                   color: #ffffff;
+                   padding: 16px 24px;
+                   border-radius: 8px;
+                   font-weight: bold;
+                   text-align: center;
+                   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);"
+        >
+            As suas férias já estão marcadas.
+        </div>
+    @endif
+</div>
+
+
+
+        <!-- Instruções de seleção -->
+        <div class="text-center text-white font-semibold">
+            @if (!$userHasVacation)
+                @if ($remainingDays === 0)
+                    <p>Os 5 dias de férias já foram selecionados.</p>
+                @else
+                    <p>Selecione mais {{ $remainingDays }} dia(s) de férias.</p>
+                @endif
+            @endif
+        </div>
+        
+        <div class="flex flex-col items-center mt-3 gap-4">
+            <div class="flex gap-4 flex-wrap justify-center">
+                <button 
+    wire:click="clearSelectedDays" 
+    class="vacation-button 
+        {{ $userHasVacation || count($selectedDays) === 0 ? 'inactive opacity-50 cursor-not-allowed' : 'inactive' }}" 
+    {{ $userHasVacation || count($selectedDays) === 0 ? 'disabled' : '' }}>
+    Limpar seleção atual de dias
+</button>
+
+                <button 
+                    wire:click="sendVacationRequestAndNotify" 
+                    class="vacation-button {{ $remainingDays === 0 && !$userHasVacation ? 'active' : 'inactive opacity-50 cursor-not-allowed' }}" 
+                    {{ $remainingDays !== 0 || $userHasVacation ? 'disabled' : '' }}>
+                    Enviar pedido de férias
+                </button>
+            </div>
+        
+            @if($activeFilter === 'my' && count($savedDays) > 0)
+                <div>
+                    <button 
+                        wire:click="deleteUserVacationDays"
+                        onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
+                        class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
+                    >
+                        Deletar do BD os dias de férias do usuário logado
+                    </button>
                 </div>
             @endif
         </div>
-
-        <!-- Instruções de seleção -->
-        @if (!$vacationRequestSent)
-            <div class="text-center text-white font-semibold">
-                @if (!$userHasVacation)
-                    @if ($remainingDays === 0)
-                        <p>Os 5 dias de férias já foram selecionados.</p>
-                    @else
-                        <p>Selecione mais {{ $remainingDays }} dia(s) de férias.</p>
-                    @endif
-                @endif
-            </div>
-
-            <div class="flex flex-col items-center mt-3 gap-4">
-                <div class="flex gap-4 flex-wrap justify-center">
-                    <button 
-                        wire:click="clearSelectedDays" 
-                        class="vacation-button {{ count($selectedDays) === 0 ? 'inactive opacity-50 cursor-not-allowed' : 'inactive' }}" 
-                        {{ count($selectedDays) === 0 ? 'disabled' : '' }}>
-                        Limpar seleção atual de dias
-                    </button>
-                    <button 
-                        wire:click="sendVacationRequestAndNotify" 
-                        class="vacation-button {{ $remainingDays === 0 && !$userHasVacation ? 'active' : 'inactive opacity-50 cursor-not-allowed' }}" 
-                        {{ $remainingDays !== 0 || $userHasVacation ? 'disabled' : '' }}>
-                        Enviar pedido de férias
-                    </button>
-                </div>
-
-                @if($activeFilter === 'my' && count($savedDays) > 0)
-                    <div>
-                        <button 
-                            wire:click="deleteUserVacationDays"
-                            onclick="if(!confirm('Tem certeza que deseja deletar seus dias de férias? Esta ação não pode ser desfeita.')) event.stopImmediatePropagation();"
-                            class="text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-md transition"
-                        >
-                            Deletar do BD os dias de férias do usuário logado
-                        </button>
-                    </div>
-                @endif
-            </div>
-        @endif
     </div>
 
     <!-- Botões Font Awesome fixos -->

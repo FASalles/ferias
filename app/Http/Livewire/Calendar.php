@@ -101,21 +101,24 @@ class Calendar extends Component
     $this->checkUserHasVacation();
 
     if ($this->userHasVacation) {
-        session()->flash('message', 'As suas férias já estão marcadas');
+        // session()->flash('message', 'As suas férias já estão marcadas');
         session()->flash('type', 'info'); // azul, para informação
     }
 }
 
 
 
-    public function updatedSelectedUser($userId)
-    {
-        if ($userId) {
-            $this->filterByUser($userId);
-        } else {
-            $this->setFilter('all'); // mostra todas as férias
-        }
+public function updatedSelectedUser($userId)
+{
+    if ($userId) {
+        $this->filterByUser($userId);
+    } else {
+        $this->setFilter('all');
     }
+
+    // ✅ Reavalie se o usuário logado ainda tem férias
+    $this->checkUserHasVacation();
+}
 
     public function filterByUser($userId)
     {
@@ -183,24 +186,31 @@ class Calendar extends Component
     }
 
     public function setFilter($filter)
-    {
-        if ($this->activeFilter === $filter) {
-            $this->activeFilter = null;
-            $this->clearSelectedDays();
-        } else {
-            $this->activeFilter = $filter;
+{
+    if ($this->activeFilter === $filter) {
+        $this->activeFilter = null;
+        $this->clearSelectedDays();
+    } else {
+        $this->activeFilter = $filter;
 
-            if ($this->activeFilter === 'my') {
-                $this->selectedUser = ''; // limpa o dropdown
-                $this->loadUserVacations();
-                $this->remainingDays = max(5 - count($this->savedDays), 0);
-            }
+        if ($this->activeFilter === 'my') {
+            $this->selectedUser = ''; // limpa o dropdown
+            $this->loadUserVacations();
+            $this->remainingDays = max(5 - count($this->savedDays), 0);
+        }
 
-            if ($this->activeFilter === 'all') {
-                $this->loadAllVacations();
-            }
+        if ($this->activeFilter === 'all') {
+            $this->loadAllVacations();
+        }
+
+        if ($this->activeFilter === 'disi' || $this->activeFilter === 'pe') {
+            $this->loadAllVacations();
         }
     }
+
+    // ✅ Sempre checar novamente se o usuário logado ainda tem férias
+    $this->checkUserHasVacation();
+}
 
     private function loadUserVacations()
 {
