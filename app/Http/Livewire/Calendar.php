@@ -86,8 +86,8 @@ class Calendar extends Component
         '11-31', // Véspera de Ano Novo (ponto facultativo após 14h)
     ];
 
-    
-    
+
+
     public function mount()
 {
     if (!auth()->check()) {
